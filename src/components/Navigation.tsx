@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Home, Search, Calendar, Heart, Info } from "lucide-react";
+import { Menu, X, Home, Search, Calendar, Heart, Info, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Navigation = () => {
@@ -24,7 +24,7 @@ const Navigation = () => {
               <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-xl">✝</span>
               </div>
-              <span className="text-2xl font-bold text-foreground">Grace Fellowship</span>
+              <span className="text-2xl font-bold text-foreground">The Apostolic Church North West</span>
             </Link>
           </div>
 
@@ -48,6 +48,15 @@ const Navigation = () => {
                 </Link>
               );
             })}
+            
+            {/* Admin Link */}
+            <Link
+              to="/admin/login"
+              className="flex items-center space-x-2 px-4 py-3 rounded-lg text-lg font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-l border-border ml-2 pl-4"
+            >
+              <Settings size={20} />
+              <span>Admin</span>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -86,6 +95,16 @@ const Navigation = () => {
                   </Link>
                 );
               })}
+              
+              {/* Admin Link */}
+              <Link
+                to="/admin/login"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-3 px-4 py-4 rounded-lg text-lg font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-t border-border mt-2 pt-4"
+              >
+                <Settings size={20} />
+                <span>Admin</span>
+              </Link>
             </div>
           </div>
         )}

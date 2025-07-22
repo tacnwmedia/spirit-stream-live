@@ -10,7 +10,7 @@ const About = () => {
         <div className="church-card mb-8">
           <div className="flex items-center justify-center mb-6">
             <Heart className="w-8 h-8 text-primary mr-3" />
-            <h1 className="text-3xl font-bold">About Grace Fellowship</h1>
+            <h1 className="text-3xl font-bold">About The Apostolic Church North West</h1>
           </div>
           <p className="text-center church-text text-muted-foreground leading-relaxed">
             A loving community united in faith, hope, and service to God and each other
@@ -25,7 +25,7 @@ const About = () => {
               Our Mission
             </h3>
             <p className="church-text text-muted-foreground leading-relaxed">
-              At Grace Fellowship, we are committed to loving God, loving people, and sharing the 
+              At The Apostolic Church North West, we are committed to loving God, loving people, and sharing the 
               Good News of Jesus Christ. We strive to create a welcoming environment where all 
               can experience God's grace, grow in faith, and serve others with compassion.
             </p>
@@ -73,7 +73,7 @@ const About = () => {
               </div>
               <div className="flex items-center">
                 <Mail className="w-5 h-5 text-primary mr-3 flex-shrink-0" />
-                <p className="church-text">info@gracefellowship.org</p>
+                <p className="church-text">info@tacnw.org</p>
               </div>
             </div>
           </div>
@@ -83,7 +83,7 @@ const About = () => {
             <h3 className="text-xl font-semibold mb-4">Pastor's Welcome</h3>
             <div className="space-y-4">
               <p className="church-text text-muted-foreground leading-relaxed">
-                "Welcome to Grace Fellowship! Whether you're a longtime member or visiting 
+                "Welcome to The Apostolic Church North West! Whether you're a longtime member or visiting 
                 for the first time, we're so glad you're here. Our church family is 
                 committed to walking together in faith, supporting one another in love, 
                 and serving our community with the heart of Christ."

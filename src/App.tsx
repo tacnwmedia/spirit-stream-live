@@ -6,10 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import HymnSearch from "./pages/HymnSearch";
+import HymnView from "./pages/HymnView";
 import Events from "./pages/Events";
 import Give from "./pages/Give";
 import Birthdays from "./pages/Birthdays";
 import About from "./pages/About";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -22,10 +25,13 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/hymns" element={<HymnSearch />} />
+          <Route path="/hymn/:number" element={<HymnView />} />
           <Route path="/events" element={<Events />} />
           <Route path="/give" element={<Give />} />
           <Route path="/birthdays" element={<Birthdays />} />
           <Route path="/about" element={<About />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

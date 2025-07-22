@@ -9,7 +9,7 @@ const TodayInfo = () => {
         {format(today, "EEEE, MMMM do, yyyy")}
       </h2>
       <p className="text-muted-foreground text-lg">
-        Welcome to Grace Fellowship
+        Welcome to The Apostolic Church North West
       </p>
     </div>
   );
