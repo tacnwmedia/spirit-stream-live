@@ -14,7 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      birthdays: {
+        Row: {
+          birthday: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          birthday: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          birthday?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      church_settings: {
+        Row: {
+          created_at: string
+          id: string
+          setting_key: string
+          setting_value: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          setting_key: string
+          setting_value?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          setting_key?: string
+          setting_value?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      daily_hymns: {
+        Row: {
+          closing_hymn_number: number | null
+          created_at: string
+          hymn_date: string
+          id: string
+          opening_hymn_number: number | null
+          updated_at: string
+        }
+        Insert: {
+          closing_hymn_number?: number | null
+          created_at?: string
+          hymn_date?: string
+          id?: string
+          opening_hymn_number?: number | null
+          updated_at?: string
+        }
+        Update: {
+          closing_hymn_number?: number | null
+          created_at?: string
+          hymn_date?: string
+          id?: string
+          opening_hymn_number?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_date: string
+          event_time: string | null
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_date: string
+          event_time?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hymns: {
+        Row: {
+          created_at: string
+          hymn_number: number
+          id: string
+          line_content: string
+          line_number: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hymn_number: number
+          id?: string
+          line_content: string
+          line_number: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hymn_number?: number
+          id?: string
+          line_content?: string
+          line_number?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
