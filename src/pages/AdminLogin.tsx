@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -15,23 +16,74 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Simple authentication - in a real app, this would connect to a backend
+  useEffect(() => {
+    // Check if already logged in
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (profile?.role === 'admin') {
+          navigate("/admin");
+        }
+      }
+    };
+    checkUser();
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Demo credentials for now
-    if (email === "admin@church.com" && password === "church123") {
-      localStorage.setItem("churchAdmin", "true");
-      toast({
-        title: "Login Successful",
-        description: "Welcome to the admin portal.",
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      navigate("/admin");
-    } else {
+
+      if (error) {
+        toast({
+          title: "Login Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        // Check if user is admin
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .single();
+
+        if (profile?.role !== 'admin') {
+          await supabase.auth.signOut();
+          toast({
+            title: "Access Denied",
+            description: "You do not have admin privileges.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        toast({
+          title: "Login Successful",
+          description: "Welcome to the admin portal.",
+        });
+        navigate("/admin");
+      }
+    } catch (error) {
       toast({
-        title: "Login Failed", 
-        description: "Invalid email or password.",
+        title: "Login Failed",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
     }
@@ -100,9 +152,7 @@ const AdminLogin = () => {
             
             <div className="mt-6 p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground text-center">
-                <strong>Demo Credentials:</strong><br />
-                Email: admin@church.com<br />
-                Password: church123
+                <strong>Note:</strong> Only users with admin privileges can access the admin dashboard. Contact your administrator if you need access.
               </p>
             </div>
           </CardContent>

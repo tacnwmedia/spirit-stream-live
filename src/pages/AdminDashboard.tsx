@@ -9,42 +9,97 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
-interface ChurchData {
-  openingHymn: { number: number; title: string };
-  closingHymn: { number: number; title: string };
-  watchword: string;
-  events: { date: string; title: string; description: string }[];
+interface DailyHymns {
+  opening_hymn_number: number | null;
+  closing_hymn_number: number | null;
+}
+
+interface ChurchSettings {
+  setting_key: string;
+  setting_value: string;
 }
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [churchData, setChurchData] = useState<ChurchData>({
-    openingHymn: { number: 25, title: "Amazing Grace" },
-    closingHymn: { number: 134, title: "Be Thou My Vision" },
-    watchword: "The Lord is my shepherd; I shall not want. - Psalm 23:1",
-    events: [
-      { date: "2024-07-28", title: "Sunday Service", description: "Regular worship service" },
-      { date: "2024-07-31", title: "Bible Study", description: "Wednesday evening Bible study" }
-    ]
+  const [dailyHymns, setDailyHymns] = useState<DailyHymns>({
+    opening_hymn_number: null,
+    closing_hymn_number: null,
   });
+  const [watchword, setWatchword] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    if (!localStorage.getItem("churchAdmin")) {
-      navigate("/admin/login");
-    }
-    
-    // Load saved data
-    const saved = localStorage.getItem("churchData");
-    if (saved) {
-      setChurchData(JSON.parse(saved));
-    }
+    const checkAuthAndLoadData = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate("/admin/login");
+          return;
+        }
+
+        // Check if user is admin
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (profile?.role !== 'admin') {
+          await supabase.auth.signOut();
+          navigate("/admin/login");
+          return;
+        }
+
+        // Load data from database
+        await loadChurchData();
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        navigate("/admin/login");
+      }
+    };
+
+    checkAuthAndLoadData();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("churchAdmin");
+  const loadChurchData = async () => {
+    try {
+      // Load today's hymns
+      const today = new Date().toISOString().split('T')[0];
+      const { data: hymnData } = await supabase
+        .from('daily_hymns')
+        .select('*')
+        .eq('hymn_date', today)
+        .single();
+
+      if (hymnData) {
+        setDailyHymns({
+          opening_hymn_number: hymnData.opening_hymn_number,
+          closing_hymn_number: hymnData.closing_hymn_number,
+        });
+      }
+
+      // Load watchword
+      const { data: watchwordData } = await supabase
+        .from('church_settings')
+        .select('setting_value')
+        .eq('setting_key', 'watchword')
+        .single();
+
+      if (watchwordData) {
+        setWatchword(watchwordData.setting_value || "");
+      }
+    } catch (error) {
+      console.error('Failed to load church data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     toast({
       title: "Logged Out",
       description: "You have been logged out successfully.",
@@ -52,24 +107,67 @@ const AdminDashboard = () => {
     navigate("/");
   };
 
-  const saveData = () => {
-    localStorage.setItem("churchData", JSON.stringify(churchData));
-    toast({
-      title: "Data Saved",
-      description: "All changes have been saved successfully.",
-    });
+  const saveData = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Save daily hymns
+      const { error: hymnError } = await supabase
+        .from('daily_hymns')
+        .upsert({
+          hymn_date: today,
+          opening_hymn_number: dailyHymns.opening_hymn_number,
+          closing_hymn_number: dailyHymns.closing_hymn_number,
+        }, {
+          onConflict: 'hymn_date'
+        });
+
+      if (hymnError) throw hymnError;
+
+      // Save watchword
+      const { error: watchwordError } = await supabase
+        .from('church_settings')
+        .upsert({
+          setting_key: 'watchword',
+          setting_value: watchword,
+        }, {
+          onConflict: 'setting_key'
+        });
+
+      if (watchwordError) throw watchwordError;
+
+      toast({
+        title: "Data Saved",
+        description: "All changes have been saved successfully.",
+      });
+    } catch (error) {
+      console.error('Save failed:', error);
+      toast({
+        title: "Save Failed",
+        description: "There was an error saving the data.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const updateHymn = (type: 'opening' | 'closing', field: 'number' | 'title', value: string | number) => {
-    const hymnKey = type === 'opening' ? 'openingHymn' : 'closingHymn';
-    setChurchData(prev => ({
+  const updateHymn = (type: 'opening' | 'closing', value: number) => {
+    const field = type === 'opening' ? 'opening_hymn_number' : 'closing_hymn_number';
+    setDailyHymns(prev => ({
       ...prev,
-      [hymnKey]: {
-        ...prev[hymnKey],
-        [field]: value
-      }
+      [field]: value || null
     }));
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading admin dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -130,18 +228,10 @@ const AdminDashboard = () => {
                     <Input
                       id="opening-number"
                       type="number"
-                      value={churchData.openingHymn.number}
-                      onChange={(e) => updateHymn('opening', 'number', parseInt(e.target.value))}
+                      value={dailyHymns.opening_hymn_number || ""}
+                      onChange={(e) => updateHymn('opening', parseInt(e.target.value))}
                       className="h-12 text-lg"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="opening-title">Hymn Title</Label>
-                    <Input
-                      id="opening-title"
-                      value={churchData.openingHymn.title}
-                      onChange={(e) => updateHymn('opening', 'title', e.target.value)}
-                      className="h-12 text-lg"
+                      placeholder="Enter hymn number"
                     />
                   </div>
                 </CardContent>
@@ -159,18 +249,10 @@ const AdminDashboard = () => {
                     <Input
                       id="closing-number"
                       type="number"
-                      value={churchData.closingHymn.number}
-                      onChange={(e) => updateHymn('closing', 'number', parseInt(e.target.value))}
+                      value={dailyHymns.closing_hymn_number || ""}
+                      onChange={(e) => updateHymn('closing', parseInt(e.target.value))}
                       className="h-12 text-lg"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="closing-title">Hymn Title</Label>
-                    <Input
-                      id="closing-title"
-                      value={churchData.closingHymn.title}
-                      onChange={(e) => updateHymn('closing', 'title', e.target.value)}
-                      className="h-12 text-lg"
+                      placeholder="Enter hymn number"
                     />
                   </div>
                 </CardContent>
@@ -186,8 +268,8 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <Textarea
-                  value={churchData.watchword}
-                  onChange={(e) => setChurchData(prev => ({ ...prev, watchword: e.target.value }))}
+                  value={watchword}
+                  onChange={(e) => setWatchword(e.target.value)}
                   className="min-h-[120px] text-lg"
                   placeholder="Enter the watchword..."
                 />
