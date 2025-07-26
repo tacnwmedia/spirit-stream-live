@@ -1,9 +1,48 @@
+import { useState, useEffect } from "react";
 import { BookOpen } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const WatchwordDisplay = () => {
-  const watchword = {
+  const [watchword, setWatchword] = useState({
     text: "The Lord is my shepherd; I shall not want.",
     reference: "Psalm 23:1"
+  });
+
+  useEffect(() => {
+    loadWatchword();
+  }, []);
+
+  const loadWatchword = async () => {
+    try {
+      const { data } = await supabase
+        .from('church_settings')
+        .select('setting_value')
+        .eq('setting_key', 'watchword')
+        .maybeSingle();
+
+      if (data?.setting_value) {
+        // Try to parse if it's JSON with text and reference
+        try {
+          const parsed = JSON.parse(data.setting_value);
+          if (parsed.text && parsed.reference) {
+            setWatchword(parsed);
+          } else {
+            setWatchword({
+              text: data.setting_value,
+              reference: "Scripture"
+            });
+          }
+        } catch {
+          // If not JSON, treat as plain text
+          setWatchword({
+            text: data.setting_value,
+            reference: "Scripture"
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load watchword:', error);
+    }
   };
 
   return (

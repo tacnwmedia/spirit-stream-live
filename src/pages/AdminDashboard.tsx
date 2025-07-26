@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Settings, LogOut, Music, Calendar, Users, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import AdminHymnSelector from "@/components/AdminHymnSelector";
+import AdminEventManager from "@/components/AdminEventManager";
+import AdminBirthdayManager from "@/components/AdminBirthdayManager";
 
 interface DailyHymns {
   opening_hymn_number: number | null;
@@ -72,7 +73,7 @@ const AdminDashboard = () => {
         .from('daily_hymns')
         .select('*')
         .eq('hymn_date', today)
-        .single();
+        .maybeSingle();
 
       if (hymnData) {
         setDailyHymns({
@@ -86,7 +87,7 @@ const AdminDashboard = () => {
         .from('church_settings')
         .select('setting_value')
         .eq('setting_key', 'watchword')
-        .single();
+        .maybeSingle();
 
       if (watchwordData) {
         setWatchword(watchwordData.setting_value || "");
@@ -216,47 +217,18 @@ const AdminDashboard = () => {
 
           <TabsContent value="hymns">
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Opening Hymn */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Opening Hymn</CardTitle>
-                  <CardDescription>Set the hymn for service opening</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="opening-number">Hymn Number</Label>
-                    <Input
-                      id="opening-number"
-                      type="number"
-                      value={dailyHymns.opening_hymn_number || ""}
-                      onChange={(e) => updateHymn('opening', parseInt(e.target.value))}
-                      className="h-12 text-lg"
-                      placeholder="Enter hymn number"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Closing Hymn */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Closing Hymn</CardTitle>
-                  <CardDescription>Set the hymn for service closing</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="closing-number">Hymn Number</Label>
-                    <Input
-                      id="closing-number"
-                      type="number"
-                      value={dailyHymns.closing_hymn_number || ""}
-                      onChange={(e) => updateHymn('closing', parseInt(e.target.value))}
-                      className="h-12 text-lg"
-                      placeholder="Enter hymn number"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+              <AdminHymnSelector
+                value={dailyHymns.opening_hymn_number}
+                onChange={(number) => updateHymn('opening', number)}
+                label="Opening Hymn"
+                placeholder="Select opening hymn"
+              />
+              <AdminHymnSelector
+                value={dailyHymns.closing_hymn_number}
+                onChange={(number) => updateHymn('closing', number)}
+                label="Closing Hymn"
+                placeholder="Select closing hymn"
+              />
             </div>
           </TabsContent>
 
@@ -284,12 +256,7 @@ const AdminDashboard = () => {
                 <CardDescription>Manage church events and calendar</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-lg text-muted-foreground">
-                    Event management coming soon...
-                  </p>
-                </div>
+                <AdminEventManager />
               </CardContent>
             </Card>
           </TabsContent>
@@ -301,22 +268,20 @@ const AdminDashboard = () => {
                 <CardDescription>Manage birthday list for current month</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-lg text-muted-foreground">
-                    Birthday management coming soon...
-                  </p>
-                </div>
+                <AdminBirthdayManager />
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
 
-        {/* Save Button */}
+        {/* Save Button - Only for Hymns and Watchword */}
         <div className="church-card">
           <Button onClick={saveData} className="church-button w-full">
-            Save All Changes
+            Save Hymns & Watchword
           </Button>
+          <p className="text-sm text-muted-foreground text-center mt-2">
+            Events and Birthdays are saved automatically
+          </p>
         </div>
       </div>
     </div>

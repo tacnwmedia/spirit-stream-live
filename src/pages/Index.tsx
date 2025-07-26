@@ -5,9 +5,48 @@ import WatchwordDisplay from "@/components/WatchwordDisplay";
 import WeatherWidget from "@/components/WeatherWidget";
 import EventCalendar from "@/components/EventCalendar";
 import { Link } from "react-router-dom";
-import { Gift } from "lucide-react";
+import { Gift, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useHymns } from "@/hooks/useHymns";
 
 const Index = () => {
+  const [dailyHymns, setDailyHymns] = useState<{
+    opening_hymn_number: number | null;
+    closing_hymn_number: number | null;
+  }>({
+    opening_hymn_number: null,
+    closing_hymn_number: null,
+  });
+  const { getHymnByNumber } = useHymns();
+
+  useEffect(() => {
+    loadDailyHymns();
+  }, []);
+
+  const loadDailyHymns = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const { data } = await supabase
+        .from('daily_hymns')
+        .select('*')
+        .eq('hymn_date', today)
+        .single();
+
+      if (data) {
+        setDailyHymns({
+          opening_hymn_number: data.opening_hymn_number,
+          closing_hymn_number: data.closing_hymn_number,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load daily hymns:', error);
+    }
+  };
+
+  const openingHymn = dailyHymns.opening_hymn_number ? getHymnByNumber(dailyHymns.opening_hymn_number) : null;
+  const closingHymn = dailyHymns.closing_hymn_number ? getHymnByNumber(dailyHymns.closing_hymn_number) : null;
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -22,13 +61,13 @@ const Index = () => {
           <div className="grid md:grid-cols-2 gap-6">
             <HymnDisplay 
               title="Opening Hymn" 
-              hymnNumber={25} 
-              hymnTitle="Amazing Grace" 
+              hymnNumber={dailyHymns.opening_hymn_number || 25} 
+              hymnTitle={openingHymn?.title || "Amazing Grace"} 
             />
             <HymnDisplay 
               title="Closing Hymn" 
-              hymnNumber={134} 
-              hymnTitle="Be Thou My Vision" 
+              hymnNumber={dailyHymns.closing_hymn_number || 134} 
+              hymnTitle={closingHymn?.title || "Be Thou My Vision"} 
             />
           </div>
           
@@ -38,15 +77,26 @@ const Index = () => {
             <WeatherWidget />
           </div>
           
-          {/* Birthday Link */}
-          <div className="church-card">
-            <Link 
-              to="/birthdays" 
-              className="flex items-center justify-center space-x-3 church-button w-full"
-            >
-              <Gift className="w-6 h-6" />
-              <span>View March Birthdays</span>
-            </Link>
+          {/* Action Links */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="church-card">
+              <Link 
+                to="/birthdays" 
+                className="flex items-center justify-center space-x-3 church-button w-full"
+              >
+                <Gift className="w-6 h-6" />
+                <span>View March Birthdays</span>
+              </Link>
+            </div>
+            <div className="church-card">
+              <Link 
+                to="/hymn-search" 
+                className="flex items-center justify-center space-x-3 church-button w-full"
+              >
+                <Search className="w-6 h-6" />
+                <span>Search Hymns</span>
+              </Link>
+            </div>
           </div>
           
           {/* Events Calendar */}

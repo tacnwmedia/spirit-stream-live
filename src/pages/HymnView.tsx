@@ -2,13 +2,26 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
-import { getHymnByNumber } from "@/data/hymns";
+import { useHymns } from "@/hooks/useHymns";
 
 const HymnView = () => {
   const { number } = useParams();
   const navigate = useNavigate();
   const hymnNumber = number ? parseInt(number) : 0;
+  const { getHymnByNumber, loading } = useHymns();
   const hymn = getHymnByNumber(hymnNumber);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="max-w-4xl mx-auto px-4 py-8 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading hymn...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!hymn) {
     return (

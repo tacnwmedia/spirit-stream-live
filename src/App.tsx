@@ -24,7 +24,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/hymns" element={<HymnSearch />} />
+          <Route path="/hymn-search" element={<HymnSearch />} />
           <Route path="/hymn/:number" element={<HymnView />} />
           <Route path="/events" element={<Events />} />
           <Route path="/give" element={<Give />} />
