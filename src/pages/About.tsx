@@ -40,11 +40,11 @@ const About = () => {
             <div className="space-y-3">
               <div className="bg-accent rounded-lg p-4">
                 <h4 className="font-semibold text-lg mb-2">Sunday Worship</h4>
-                <p className="church-text text-muted-foreground">10:00 AM - 11:30 AM</p>
+                <p className="church-text text-muted-foreground">1:00 PM</p>
               </div>
               <div className="bg-accent rounded-lg p-4">
-                <h4 className="font-semibold text-lg mb-2">Wednesday Bible Study</h4>
-                <p className="church-text text-muted-foreground">7:00 PM - 8:30 PM</p>
+                <h4 className="font-semibold text-lg mb-2">Bible Study / Prayer Meeting</h4>
+                <p className="church-text text-muted-foreground">7:00 PM</p>
               </div>
               <div className="bg-accent rounded-lg p-4">
                 <h4 className="font-semibold text-lg mb-2">Friday Prayer Meeting</h4>
@@ -63,8 +63,8 @@ const About = () => {
               <div className="flex items-center">
                 <MapPin className="w-5 h-5 text-primary mr-3 flex-shrink-0" />
                 <div>
-                  <p className="church-text font-medium">123 Church Street</p>
-                  <p className="church-text text-muted-foreground">Your City, ST 12345</p>
+                  <p className="church-text font-medium">1 American Way</p>
+                  <p className="church-text text-muted-foreground">Elgin, IL 60120</p>
                 </div>
               </div>
               <div className="flex items-center">
@@ -73,7 +73,7 @@ const About = () => {
               </div>
               <div className="flex items-center">
                 <Mail className="w-5 h-5 text-primary mr-3 flex-shrink-0" />
-                <p className="church-text">info@tacnw.org</p>
+                <p className="church-text">tacnwmedia@gmail.com</p>
               </div>
             </div>
           </div>
@@ -95,7 +95,7 @@ const About = () => {
               </p>
               <p className="church-text font-medium">
                 Blessings,<br />
-                Pastor John Smith
+                Pastor Joshua Aregbeshola
               </p>
             </div>
           </div>

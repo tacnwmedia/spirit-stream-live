@@ -77,9 +77,6 @@ const BirthdayDisplayLive = () => {
               <div className="text-2xl">🎂</div>
               <div className="flex-1">
                 <div className="font-medium text-foreground">{birthday.name}</div>
-                <div className="text-sm text-muted-foreground">
-                  {format(new Date(birthday.birthday + 'T00:00:00'), "MMMM do")}
-                </div>
               </div>
             </div>
           ))}
