@@ -17,7 +17,10 @@ const HymnDisplay = ({ title, hymnNumber, hymnTitle }: HymnDisplayProps) => {
         </div>
         <div className="text-center">
           <div className="text-3xl font-bold text-primary mb-2">#{hymnNumber}</div>
-          <div className="church-text font-medium">{hymnTitle}</div>
+          <div className="church-text font-medium mb-3">{hymnTitle}</div>
+          <div className="text-sm text-muted-foreground bg-accent px-3 py-1 rounded-full inline-block">
+            ▶ Tap to View Hymn
+          </div>
         </div>
       </div>
     </Link>

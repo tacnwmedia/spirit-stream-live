@@ -9,7 +9,7 @@ const Navigation = () => {
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
-    { name: "Search Hymns", href: "/hymns", icon: Search },
+    { name: "Search Hymns", href: "/hymn-search", icon: Search },
     { name: "Events", href: "/events", icon: Calendar },
     { name: "Give", href: "/give", icon: Heart },
     { name: "About", href: "/about", icon: Info },

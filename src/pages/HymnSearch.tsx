@@ -1,26 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Music } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
+import { Link } from "react-router-dom";
+import { useHymns } from "@/hooks/useHymns";
 
 const HymnSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
-
-  // Sample hymn database
-  const hymns = [
-    { number: 1, title: "Holy, Holy, Holy", firstLine: "Holy, holy, holy! Lord God Almighty!" },
-    { number: 25, title: "Amazing Grace", firstLine: "Amazing grace! How sweet the sound" },
-    { number: 46, title: "How Great Thou Art", firstLine: "O Lord my God, when I in awesome wonder" },
-    { number: 78, title: "Great Is Thy Faithfulness", firstLine: "Great is thy faithfulness, O God my Father" },
-    { number: 102, title: "Blessed Assurance", firstLine: "Blessed assurance, Jesus is mine!" },
-    { number: 134, title: "Be Thou My Vision", firstLine: "Be thou my vision, O Lord of my heart" },
-    { number: 156, title: "Rock of Ages", firstLine: "Rock of Ages, cleft for me" },
-    { number: 189, title: "What a Friend We Have in Jesus", firstLine: "What a friend we have in Jesus" },
-    { number: 234, title: "Crown Him with Many Crowns", firstLine: "Crown him with many crowns" },
-    { number: 267, title: "Just As I Am", firstLine: "Just as I am, without one plea" }
-  ];
+  const { hymns, loading, searchHymns } = useHymns();
 
   const handleSearch = () => {
     if (!searchTerm.trim()) {
@@ -28,12 +17,7 @@ const HymnSearch = () => {
       return;
     }
 
-    const results = hymns.filter(hymn => 
-      hymn.number.toString().includes(searchTerm) ||
-      hymn.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      hymn.firstLine.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
+    const results = searchHymns(searchTerm);
     setSearchResults(results);
   };
 
@@ -72,21 +56,23 @@ const HymnSearch = () => {
             </h2>
             
             {searchResults.map((hymn) => (
-              <div key={hymn.number} className="church-card">
-                <div className="flex items-start space-x-4">
-                  <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
-                    {hymn.number}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-foreground mb-2">
-                      {hymn.title}
-                    </h3>
-                    <p className="church-text text-muted-foreground italic">
-                      "{hymn.firstLine}"
-                    </p>
+              <Link key={hymn.hymn_number} to={`/hymn/${hymn.hymn_number}`}>
+                <div className="church-card hover:shadow-lg transition-shadow cursor-pointer">
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
+                      {hymn.hymn_number}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-foreground mb-2">
+                        {hymn.title}
+                      </h3>
+                      <p className="church-text text-muted-foreground italic">
+                        {hymn.content.split('\n')[0].substring(0, 100)}...
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
