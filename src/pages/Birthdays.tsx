@@ -82,9 +82,6 @@ const Birthdays = () => {
                     <h3 className="text-xl font-semibold text-foreground mb-1">
                       {birthday.name}
                     </h3>
-                    <p className="church-text text-muted-foreground">
-                      {format(new Date(birthday.birthday + 'T00:00:00'), "MMMM do")}
-                    </p>
                   </div>
                   <div className="text-4xl">🎂</div>
                 </div>
