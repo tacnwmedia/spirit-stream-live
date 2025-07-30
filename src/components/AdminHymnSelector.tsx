@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Search, Music } from "lucide-react";
+import { Search, Music, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useHymns, Hymn } from "@/hooks/useHymns";
+import AdminHymnEntry from "./AdminHymnEntry";
 
 interface AdminHymnSelectorProps {
   value: number | null;
@@ -15,7 +16,8 @@ interface AdminHymnSelectorProps {
 const AdminHymnSelector = ({ value, onChange, label, placeholder }: AdminHymnSelectorProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const { hymns, loading, searchHymns } = useHymns();
+  const [showHymnEntry, setShowHymnEntry] = useState(false);
+  const { hymns, loading, searchHymns, reload } = useHymns();
   const [searchResults, setSearchResults] = useState<Hymn[]>([]);
   const [selectedHymn, setSelectedHymn] = useState<Hymn | null>(null);
 
@@ -40,8 +42,16 @@ const AdminHymnSelector = ({ value, onChange, label, placeholder }: AdminHymnSel
     setSelectedHymn(hymn);
     onChange(hymn.number);
     setIsOpen(false);
+    setShowHymnEntry(false);
     setSearchTerm("");
     setSearchResults([]);
+  };
+
+  const handleHymnCreated = async (hymnNumber: number) => {
+    await reload(); // Reload hymns to include the new one
+    setShowHymnEntry(false);
+    // Set the hymn selection directly since reload is async
+    onChange(hymnNumber);
   };
 
   return (
@@ -72,14 +82,24 @@ const AdminHymnSelector = ({ value, onChange, label, placeholder }: AdminHymnSel
           </Button>
         )}
 
-        {isOpen && (
+        {isOpen && !showHymnEntry && (
           <div className="space-y-3">
-            <Input
-              placeholder="Search hymns by number, title, or lyrics..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="w-full"
-            />
+            <div className="flex space-x-2">
+              <Input
+                placeholder="Search hymns by number, title, or lyrics..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="flex-1"
+              />
+              <Button 
+                onClick={() => setShowHymnEntry(true)}
+                variant="outline"
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                New
+              </Button>
+            </div>
             
             {searchResults.length > 0 && (
               <div className="max-h-60 overflow-y-auto space-y-2 border rounded-md p-2">
@@ -98,7 +118,20 @@ const AdminHymnSelector = ({ value, onChange, label, placeholder }: AdminHymnSel
                 ))}
               </div>
             )}
+            
+            {searchTerm && searchResults.length === 0 && (
+              <div className="text-center py-4 text-muted-foreground">
+                <p>No hymns found. Try a different search or create a new hymn.</p>
+              </div>
+            )}
           </div>
+        )}
+
+        {showHymnEntry && (
+          <AdminHymnEntry
+            onHymnCreated={handleHymnCreated}
+            onCancel={() => setShowHymnEntry(false)}
+          />
         )}
       </CardContent>
     </Card>

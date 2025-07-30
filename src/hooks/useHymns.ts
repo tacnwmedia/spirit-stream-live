@@ -46,18 +46,36 @@ export const useHymns = () => {
         const sortedLines = lines.sort((a, b) => a.line_number - b.line_number);
         const content = sortedLines.map(line => line.line_content).join('\n');
         
-        // Extract title from first line
-        const title = sortedLines[0]?.line_content || `Hymn ${number}`;
+        // Extract title from first line - remove hymn number prefix if present
+        let title = sortedLines[0]?.line_content || `Hymn ${number}`;
+        const numberPrefix = new RegExp(`^${number}\\s+`, 'i');
+        title = title.replace(numberPrefix, '').trim();
         
-        // Group lines into verses (every 4-6 lines typically)
+        // If title extraction failed, try to get a meaningful title
+        if (!title || title.length < 3) {
+          const firstLine = sortedLines[0]?.line_content || '';
+          // Take the part after the number, or the whole line if no number
+          const parts = firstLine.split(/\d+\s+/);
+          title = parts.length > 1 ? parts[1].trim() : firstLine.trim() || `Hymn ${number}`;
+        }
+        
+        // Group lines into verses - look for natural breaks
         const verses: string[] = [];
         let currentVerse: string[] = [];
         
         sortedLines.forEach((line, index) => {
-          currentVerse.push(line.line_content);
+          const cleanLine = line.line_content.replace(numberPrefix, '').trim();
+          currentVerse.push(cleanLine);
           
-          // Start new verse every 4 lines or at natural breaks
-          if (currentVerse.length >= 4 || index === sortedLines.length - 1) {
+          // Check for verse breaks - empty lines, chorus markers, or every 4-6 lines
+          const nextLine = sortedLines[index + 1]?.line_content || '';
+          const isEndOfVerse = 
+            currentVerse.length >= 4 || 
+            index === sortedLines.length - 1 ||
+            nextLine.toLowerCase().includes('chorus') ||
+            nextLine.toLowerCase().includes('refrain');
+            
+          if (isEndOfVerse) {
             verses.push(currentVerse.join('\n'));
             currentVerse = [];
           }
