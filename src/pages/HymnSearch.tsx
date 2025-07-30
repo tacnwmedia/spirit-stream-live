@@ -56,11 +56,11 @@ const HymnSearch = () => {
             </h2>
             
             {searchResults.map((hymn) => (
-              <Link key={hymn.hymn_number} to={`/hymn/${hymn.hymn_number}`}>
+              <Link key={hymn.number} to={`/hymn/${hymn.number}`}>
                 <div className="church-card hover:shadow-lg transition-shadow cursor-pointer">
                   <div className="flex items-start space-x-4">
                     <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
-                      {hymn.hymn_number}
+                      {hymn.number}
                     </div>
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold text-foreground mb-2">

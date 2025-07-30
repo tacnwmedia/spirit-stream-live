@@ -17,7 +17,7 @@ const AdminHymnSelector = ({ value, onChange, label, placeholder }: AdminHymnSel
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [showHymnEntry, setShowHymnEntry] = useState(false);
-  const { hymns, loading, searchHymns, reload } = useHymns();
+  const { hymns, loading, searchHymns, forceReload } = useHymns();
   const [searchResults, setSearchResults] = useState<Hymn[]>([]);
   const [selectedHymn, setSelectedHymn] = useState<Hymn | null>(null);
 
@@ -48,9 +48,10 @@ const AdminHymnSelector = ({ value, onChange, label, placeholder }: AdminHymnSel
   };
 
   const handleHymnCreated = async (hymnNumber: number) => {
-    await reload(); // Reload hymns to include the new one
+    // Force reload hymns to include the new one
+    forceReload();
     setShowHymnEntry(false);
-    // Set the hymn selection directly since reload is async
+    // Set the hymn selection directly
     onChange(hymnNumber);
   };
 

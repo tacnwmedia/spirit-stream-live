@@ -112,11 +112,17 @@ export const useHymns = () => {
     );
   };
 
+  const forceReload = () => {
+    setLoading(true);
+    loadHymns();
+  };
+
   return {
     hymns,
     loading,
     getHymnByNumber,
     searchHymns,
-    reload: loadHymns
+    reload: loadHymns,
+    forceReload
   };
 };

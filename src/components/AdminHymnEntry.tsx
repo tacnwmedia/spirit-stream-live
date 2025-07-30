@@ -78,6 +78,11 @@ const AdminHymnEntry = ({ onHymnCreated, onCancel }: AdminHymnEntryProps) => {
         description: `Hymn #${number} has been added successfully`,
       });
 
+      // Reset form first
+      setHymnNumber("");
+      setHymnTitle("");
+      setHymnContent("");
+
       onHymnCreated(number);
     } catch (error) {
       console.error('Error creating hymn:', error);
