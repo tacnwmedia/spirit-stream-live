@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Search, Music, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const AdminHymnSelector = ({ value, onChange, label, placeholder }: AdminHymnSel
     setSearchTerm(term);
     if (term.trim()) {
       const results = searchHymns(term).slice(0, 10); // Limit results
+      console.log(`Admin search for "${term}" returned:`, results.length, 'results');
       setSearchResults(results);
     } else {
       setSearchResults([]);
@@ -39,6 +41,7 @@ const AdminHymnSelector = ({ value, onChange, label, placeholder }: AdminHymnSel
   };
 
   const selectHymn = (hymn: Hymn) => {
+    console.log('Selected hymn:', hymn.number, hymn.title);
     setSelectedHymn(hymn);
     onChange(hymn.number);
     setIsOpen(false);
@@ -48,8 +51,9 @@ const AdminHymnSelector = ({ value, onChange, label, placeholder }: AdminHymnSel
   };
 
   const handleHymnCreated = async (hymnNumber: number) => {
+    console.log('Hymn created, reloading data...');
     // Force reload hymns to include the new one
-    forceReload();
+    await forceReload();
     setShowHymnEntry(false);
     // Set the hymn selection directly
     onChange(hymnNumber);
@@ -120,7 +124,7 @@ const AdminHymnSelector = ({ value, onChange, label, placeholder }: AdminHymnSel
               </div>
             )}
             
-            {searchTerm && searchResults.length === 0 && (
+            {searchTerm && searchResults.length === 0 && !loading && (
               <div className="text-center py-4 text-muted-foreground">
                 <p>No hymns found. Try a different search or create a new hymn.</p>
               </div>

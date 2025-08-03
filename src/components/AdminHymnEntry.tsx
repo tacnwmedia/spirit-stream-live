@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,8 @@ const AdminHymnEntry = ({ onHymnCreated, onCancel }: AdminHymnEntryProps) => {
 
     setLoading(true);
     try {
+      console.log(`Creating hymn ${number}: ${hymnTitle}`);
+      
       // Check if hymn number already exists
       const { data: existingHymn } = await supabase
         .from('hymns')
@@ -67,11 +70,18 @@ const AdminHymnEntry = ({ onHymnCreated, onCancel }: AdminHymnEntryProps) => {
         line_content: index === 0 ? `${number} ${hymnTitle} ${line}` : line
       }));
 
+      console.log('Inserting hymn data:', hymnData);
+
       const { error } = await supabase
         .from('hymns')
         .insert(hymnData);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error inserting hymn:', error);
+        throw error;
+      }
+
+      console.log(`Successfully created hymn ${number}`);
 
       toast({
         title: "Hymn Created",
@@ -83,7 +93,10 @@ const AdminHymnEntry = ({ onHymnCreated, onCancel }: AdminHymnEntryProps) => {
       setHymnTitle("");
       setHymnContent("");
 
-      onHymnCreated(number);
+      // Wait a moment for the database to be consistent
+      setTimeout(() => {
+        onHymnCreated(number);
+      }, 500);
     } catch (error) {
       console.error('Error creating hymn:', error);
       toast({

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -27,6 +28,8 @@ export const useHymns = () => {
 
       if (error) throw error;
 
+      console.log('Loading hymns from database:', data?.length, 'total lines');
+
       // Group lines by hymn number
       const hymnGroups: { [key: number]: { line_number: number; line_content: string }[] } = {};
       
@@ -39,6 +42,8 @@ export const useHymns = () => {
           line_content: row.line_content
         });
       });
+
+      console.log('Grouped hymns:', Object.keys(hymnGroups).length, 'hymns found');
 
       // Convert to hymn objects
       const hymnList: Hymn[] = Object.entries(hymnGroups).map(([numberStr, lines]) => {
@@ -89,6 +94,7 @@ export const useHymns = () => {
         };
       });
 
+      console.log('Final hymn list:', hymnList.length, 'hymns processed');
       setHymns(hymnList);
     } catch (error) {
       console.error('Failed to load hymns:', error);
@@ -98,23 +104,29 @@ export const useHymns = () => {
   };
 
   const getHymnByNumber = (number: number): Hymn | undefined => {
-    return hymns.find(hymn => hymn.number === number);
+    const hymn = hymns.find(hymn => hymn.number === number);
+    console.log(`Looking for hymn ${number}, found:`, hymn ? `${hymn.title}` : 'not found');
+    return hymn;
   };
 
   const searchHymns = (query: string): Hymn[] => {
     if (!query.trim()) return hymns;
     
     const searchTerm = query.toLowerCase();
-    return hymns.filter(hymn => 
+    const results = hymns.filter(hymn => 
       hymn.number.toString().includes(searchTerm) ||
       hymn.title.toLowerCase().includes(searchTerm) ||
       hymn.content.toLowerCase().includes(searchTerm)
     );
+    
+    console.log(`Searching for "${query}", found ${results.length} results`);
+    return results;
   };
 
-  const forceReload = () => {
+  const forceReload = async () => {
+    console.log('Force reloading hymns...');
     setLoading(true);
-    loadHymns();
+    await loadHymns();
   };
 
   return {
