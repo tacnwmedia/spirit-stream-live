@@ -20,20 +20,37 @@ export const useHymns = () => {
 
   const loadHymns = async () => {
     try {
-      const { data, error } = await supabase
-        .from('hymns')
-        .select('hymn_number, line_number, line_content')
-        .order('hymn_number')
-        .order('line_number');
+      // Get all hymns without pagination limit
+      let allData: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      if (error) throw error;
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('hymns')
+          .select('hymn_number, line_number, line_content')
+          .order('hymn_number')
+          .order('line_number')
+          .range(from, from + pageSize - 1);
 
-      console.log('Loading hymns from database:', data?.length, 'total lines');
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          allData = [...allData, ...data];
+          hasMore = data.length === pageSize;
+          from += pageSize;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      console.log('Loading hymns from database:', allData.length, 'total lines');
 
       // Group lines by hymn number
       const hymnGroups: { [key: number]: { line_number: number; line_content: string }[] } = {};
       
-      data?.forEach(row => {
+      allData.forEach(row => {
         if (!hymnGroups[row.hymn_number]) {
           hymnGroups[row.hymn_number] = [];
         }
