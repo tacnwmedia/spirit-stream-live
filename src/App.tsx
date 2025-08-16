@@ -10,6 +10,7 @@ import HymnView from "./pages/HymnView";
 import Events from "./pages/Events";
 import Give from "./pages/Give";
 import Birthdays from "./pages/Birthdays";
+import WeddingAnniversaries from "./pages/WeddingAnniversaries";
 import About from "./pages/About";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/events" element={<Events />} />
           <Route path="/give" element={<Give />} />
           <Route path="/birthdays" element={<Birthdays />} />
+          <Route path="/wedding-anniversaries" element={<WeddingAnniversaries />} />
           <Route path="/about" element={<About />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />

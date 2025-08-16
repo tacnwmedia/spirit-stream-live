@@ -5,6 +5,7 @@ import WatchwordDisplay from "@/components/WatchwordDisplay";
 import WeatherWidget from "@/components/WeatherWidget";
 import EventCalendarLive from "@/components/EventCalendarLive";
 import BirthdayDisplayLive from "@/components/BirthdayDisplayLive";
+import WeddingAnniversaryDisplayLive from "@/components/WeddingAnniversaryDisplayLive";
 import { Link } from "react-router-dom";
 import { Gift, Search } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -78,9 +79,14 @@ const Index = () => {
             <WeatherWidget />
           </div>
           
-          {/* Birthdays and Search Links */}
+          {/* Birthdays and Wedding Anniversaries */}
           <div className="grid md:grid-cols-2 gap-6">
             <BirthdayDisplayLive />
+            <WeddingAnniversaryDisplayLive />
+          </div>
+          
+          {/* Search Links */}
+          <div className="grid md:grid-cols-2 gap-6">
             <div className="church-card">
               <Link 
                 to="/hymn-search" 
@@ -88,6 +94,15 @@ const Index = () => {
               >
                 <Search className="w-6 h-6" />
                 <span>Search Hymns</span>
+              </Link>
+            </div>
+            <div className="church-card">
+              <Link 
+                to="/give" 
+                className="flex items-center justify-center space-x-3 church-button w-full"
+              >
+                <Gift className="w-6 h-6" />
+                <span>Give Online</span>
               </Link>
             </div>
           </div>

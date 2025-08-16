@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Settings, LogOut, Music, Calendar, Users, BookOpen } from "lucide-react";
+import { Settings, LogOut, Music, Calendar, Users, BookOpen, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AdminHymnSelector from "@/components/AdminHymnSelector";
 import AdminEventManager from "@/components/AdminEventManager";
 import AdminBirthdayManager from "@/components/AdminBirthdayManager";
+import AdminWeddingAnniversaryManager from "@/components/AdminWeddingAnniversaryManager";
 
 interface DailyHymns {
   opening_hymn_number: number | null;
@@ -196,7 +197,7 @@ const AdminDashboard = () => {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="hymns" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="hymns" className="flex items-center space-x-2">
               <Music className="w-4 h-4" />
               <span>Hymns</span>
@@ -212,6 +213,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="birthdays" className="flex items-center space-x-2">
               <Users className="w-4 h-4" />
               <span>Birthdays</span>
+            </TabsTrigger>
+            <TabsTrigger value="anniversaries" className="flex items-center space-x-2">
+              <Heart className="w-4 h-4" />
+              <span>Anniversaries</span>
             </TabsTrigger>
           </TabsList>
 
@@ -272,6 +277,18 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="anniversaries">
+            <Card>
+              <CardHeader>
+                <CardTitle>Wedding Anniversaries</CardTitle>
+                <CardDescription>Manage wedding anniversary list for current month</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AdminWeddingAnniversaryManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {/* Save Button - Only for Hymns and Watchword */}
@@ -280,7 +297,7 @@ const AdminDashboard = () => {
             Save Hymns & Watchword
           </Button>
           <p className="text-sm text-muted-foreground text-center mt-2">
-            Events and Birthdays are saved automatically
+            Events, Birthdays, and Wedding Anniversaries are saved automatically
           </p>
         </div>
       </div>
