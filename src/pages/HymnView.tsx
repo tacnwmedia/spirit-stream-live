@@ -74,12 +74,14 @@ const HymnView = () => {
         <div className="church-card">
           <div className="space-y-8">
             {hymn.verses.map((verse, index) => (
-              <div key={index} className="border-l-4 border-primary pl-6">
+              <div key={verse.number} className="border-l-4 border-primary pl-6">
                 <div className="text-sm font-medium text-muted-foreground mb-2">
-                  Verse {index + 1}
+                  Verse {verse.number}
                 </div>
-                <div className="church-text leading-loose whitespace-pre-line">
-                  {verse}
+                <div className="church-text leading-loose">
+                  {verse.lines.map((line, lineIndex) => (
+                    <div key={lineIndex} className="mb-1">{line}</div>
+                  ))}
                 </div>
               </div>
             ))}
@@ -89,8 +91,10 @@ const HymnView = () => {
                 <div className="text-sm font-medium text-muted-foreground mb-2">
                   Chorus
                 </div>
-                <div className="church-text leading-loose whitespace-pre-line font-medium">
-                  {hymn.chorus}
+                <div className="church-text leading-loose font-medium">
+                  {hymn.chorus.map((line, lineIndex) => (
+                    <div key={lineIndex} className="mb-1">{line}</div>
+                  ))}
                 </div>
               </div>
             )}

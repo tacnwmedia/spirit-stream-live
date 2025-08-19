@@ -2,12 +2,25 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+// Updated Hymn structure to support verse/chorus organization
 export interface Hymn {
   number: number;
   title: string;
-  content: string;
-  verses: string[];
-  chorus?: string;
+  verses: Array<{
+    number: number;
+    lines: string[];
+  }>;
+  chorus?: string[];
+  fullContent: string; // For search purposes
+}
+
+interface HymnLine {
+  id: number;
+  hymn_number: number;
+  verse_number: number;
+  line_number: number;
+  text: string;
+  chorus: boolean;
 }
 
 export const useHymns = () => {
@@ -20,101 +33,74 @@ export const useHymns = () => {
 
   const loadHymns = async () => {
     try {
-      // Get all hymns without pagination limit
-      let allData: any[] = [];
-      let from = 0;
-      const pageSize = 1000;
-      let hasMore = true;
+      setLoading(true);
+      
+      const { data: hymnLines, error } = await supabase
+        .from('hymn_lines')
+        .select('*')
+        .order('hymn_number, verse_number, line_number');
 
-      while (hasMore) {
-        const { data, error } = await supabase
-          .from('hymns')
-          .select('hymn_number, line_number, line_content')
-          .order('hymn_number')
-          .order('line_number')
-          .range(from, from + pageSize - 1);
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          allData = [...allData, ...data];
-          hasMore = data.length === pageSize;
-          from += pageSize;
-        } else {
-          hasMore = false;
-        }
+      if (error) {
+        console.error('Error loading hymn lines:', error);
+        return;
       }
 
-      console.log('Loading hymns from database:', allData.length, 'total lines');
-
-      // Group lines by hymn number
-      const hymnGroups: { [key: number]: { line_number: number; line_content: string }[] } = {};
+      // Group lines by hymn number and organize by verses
+      const hymnMap = new Map<number, Hymn>();
       
-      allData.forEach(row => {
-        if (!hymnGroups[row.hymn_number]) {
-          hymnGroups[row.hymn_number] = [];
+      hymnLines?.forEach((line: HymnLine) => {
+        if (!hymnMap.has(line.hymn_number)) {
+          hymnMap.set(line.hymn_number, {
+            number: line.hymn_number,
+            title: '', // Will be extracted from first line
+            verses: [],
+            fullContent: ''
+          });
         }
-        hymnGroups[row.hymn_number].push({
-          line_number: row.line_number,
-          line_content: row.line_content
-        });
-      });
 
-      console.log('Grouped hymns:', Object.keys(hymnGroups).length, 'hymns found');
-
-      // Convert to hymn objects
-      const hymnList: Hymn[] = Object.entries(hymnGroups).map(([numberStr, lines]) => {
-        const number = parseInt(numberStr);
-        const sortedLines = lines.sort((a, b) => a.line_number - b.line_number);
-        const content = sortedLines.map(line => line.line_content).join('\n');
+        const hymn = hymnMap.get(line.hymn_number)!;
         
-        // Extract title from first line - remove hymn number prefix if present
-        let title = sortedLines[0]?.line_content || `Hymn ${number}`;
-        const numberPrefix = new RegExp(`^${number}\\s+`, 'i');
-        title = title.replace(numberPrefix, '').trim();
-        
-        // If title extraction failed, try to get a meaningful title
-        if (!title || title.length < 3) {
-          const firstLine = sortedLines[0]?.line_content || '';
-          // Take the part after the number, or the whole line if no number
-          const parts = firstLine.split(/\d+\s+/);
-          title = parts.length > 1 ? parts[1].trim() : firstLine.trim() || `Hymn ${number}`;
-        }
-        
-        // Group lines into verses - look for natural breaks
-        const verses: string[] = [];
-        let currentVerse: string[] = [];
-        
-        sortedLines.forEach((line, index) => {
-          const cleanLine = line.line_content.replace(numberPrefix, '').trim();
-          currentVerse.push(cleanLine);
-          
-          // Check for verse breaks - empty lines, chorus markers, or every 4-6 lines
-          const nextLine = sortedLines[index + 1]?.line_content || '';
-          const isEndOfVerse = 
-            currentVerse.length >= 4 || 
-            index === sortedLines.length - 1 ||
-            nextLine.toLowerCase().includes('chorus') ||
-            nextLine.toLowerCase().includes('refrain');
-            
-          if (isEndOfVerse) {
-            verses.push(currentVerse.join('\n'));
-            currentVerse = [];
+        if (line.chorus) {
+          // Handle chorus lines
+          if (!hymn.chorus) {
+            hymn.chorus = [];
           }
-        });
-
-        return {
-          number,
-          title,
-          content,
-          verses: verses.length > 0 ? verses : [content]
-        };
+          hymn.chorus.push(line.text);
+        } else {
+          // Handle verse lines
+          let verse = hymn.verses.find(v => v.number === line.verse_number);
+          if (!verse) {
+            verse = { number: line.verse_number, lines: [] };
+            hymn.verses.push(verse);
+          }
+          verse.lines.push(line.text);
+          
+          // Extract title from first line of first verse if not set
+          if (hymn.title === '' && line.verse_number === 1 && line.line_number === 1) {
+            // Try to extract title from first line (format might be "25 Amazing Grace Amazing grace! how sweet the sound")
+            const titleMatch = line.text.match(/^\d+\s+(.+?)\s+(.+)$/);
+            if (titleMatch) {
+              hymn.title = titleMatch[1];
+            } else {
+              // Fallback: use first few words
+              hymn.title = line.text.split(' ').slice(0, 3).join(' ');
+            }
+          }
+        }
+        
+        hymn.fullContent += ' ' + line.text;
       });
 
-      console.log('Final hymn list:', hymnList.length, 'hymns processed');
-      setHymns(hymnList);
+      // Sort verses by number
+      hymnMap.forEach(hymn => {
+        hymn.verses.sort((a, b) => a.number - b.number);
+        hymn.fullContent = hymn.fullContent.trim();
+      });
+
+      const processedHymns = Array.from(hymnMap.values()).sort((a, b) => a.number - b.number);
+      setHymns(processedHymns);
     } catch (error) {
-      console.error('Failed to load hymns:', error);
+      console.error('Error processing hymns:', error);
     } finally {
       setLoading(false);
     }
@@ -127,17 +113,14 @@ export const useHymns = () => {
   };
 
   const searchHymns = (query: string): Hymn[] => {
-    if (!query.trim()) return hymns;
+    if (!query.trim()) return [];
     
     const searchTerm = query.toLowerCase();
-    const results = hymns.filter(hymn => 
+    return hymns.filter(hymn => 
       hymn.number.toString().includes(searchTerm) ||
       hymn.title.toLowerCase().includes(searchTerm) ||
-      hymn.content.toLowerCase().includes(searchTerm)
+      hymn.fullContent.toLowerCase().includes(searchTerm)
     );
-    
-    console.log(`Searching for "${query}", found ${results.length} results`);
-    return results;
   };
 
   const forceReload = async () => {

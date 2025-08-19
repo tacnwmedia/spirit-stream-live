@@ -119,30 +119,36 @@ export type Database = {
         }
         Relationships: []
       }
-      hymns: {
+      hymn_lines: {
         Row: {
+          chorus: boolean
           created_at: string
           hymn_number: number
-          id: string
-          line_content: string
+          id: number
           line_number: number
+          text: string
           updated_at: string
+          verse_number: number
         }
         Insert: {
+          chorus?: boolean
           created_at?: string
           hymn_number: number
-          id?: string
-          line_content: string
+          id?: number
           line_number: number
+          text: string
           updated_at?: string
+          verse_number: number
         }
         Update: {
+          chorus?: boolean
           created_at?: string
           hymn_number?: number
-          id?: string
-          line_content?: string
+          id?: number
           line_number?: number
+          text?: string
           updated_at?: string
+          verse_number?: number
         }
         Relationships: []
       }

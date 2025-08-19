@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import AdminHymnSelector from "@/components/AdminHymnSelector";
 import AdminEventManager from "@/components/AdminEventManager";
 import AdminBirthdayManager from "@/components/AdminBirthdayManager";
+import AdminHymnEntry from "@/components/AdminHymnEntry";
+import AdminHymnCSVUpload from "@/components/AdminHymnCSVUpload";
 import AdminWeddingAnniversaryManager from "@/components/AdminWeddingAnniversaryManager";
 
 interface DailyHymns {
@@ -32,6 +34,8 @@ const AdminDashboard = () => {
   });
   const [watchword, setWatchword] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showHymnEntry, setShowHymnEntry] = useState(false);
+  const [showCSVUpload, setShowCSVUpload] = useState(false);
 
   useEffect(() => {
     const checkAuthAndLoadData = async () => {
@@ -152,6 +156,22 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleHymnCreated = (hymnNumber: number) => {
+    setShowHymnEntry(false);
+    toast({
+      title: "Hymn Created",
+      description: `Hymn #${hymnNumber} has been added to the database`,
+    });
+  };
+
+  const handleHymnsUploaded = () => {
+    setShowCSVUpload(false);
+    toast({
+      title: "Hymns Uploaded",
+      description: "CSV hymns have been uploaded successfully",
+    });
+  };
+
   const updateHymn = (type: 'opening' | 'closing', value: number) => {
     const field = type === 'opening' ? 'opening_hymn_number' : 'closing_hymn_number';
     setDailyHymns(prev => ({
@@ -221,19 +241,65 @@ const AdminDashboard = () => {
           </TabsList>
 
           <TabsContent value="hymns">
-            <div className="grid md:grid-cols-2 gap-6">
-              <AdminHymnSelector
-                value={dailyHymns.opening_hymn_number}
-                onChange={(number) => updateHymn('opening', number)}
-                label="Opening Hymn"
-                placeholder="Select opening hymn"
-              />
-              <AdminHymnSelector
-                value={dailyHymns.closing_hymn_number}
-                onChange={(number) => updateHymn('closing', number)}
-                label="Closing Hymn"
-                placeholder="Select closing hymn"
-              />
+            <div className="space-y-6">
+              {/* Daily Hymn Selection */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <AdminHymnSelector
+                  value={dailyHymns.opening_hymn_number}
+                  onChange={(number) => updateHymn('opening', number)}
+                  label="Opening Hymn"
+                  placeholder="Select opening hymn"
+                />
+                <AdminHymnSelector
+                  value={dailyHymns.closing_hymn_number}
+                  onChange={(number) => updateHymn('closing', number)}
+                  label="Closing Hymn"
+                  placeholder="Select closing hymn"
+                />
+              </div>
+              
+              {/* Hymn Management Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Hymn Database Management</CardTitle>
+                  <CardDescription>Add new hymns or upload from CSV file</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {!showHymnEntry && !showCSVUpload && (
+                    <div className="flex gap-4">
+                      <Button 
+                        onClick={() => setShowHymnEntry(true)}
+                        className="flex items-center space-x-2"
+                      >
+                        <Music className="w-4 h-4" />
+                        <span>Add New Hymn</span>
+                      </Button>
+                      <Button 
+                        onClick={() => setShowCSVUpload(true)}
+                        variant="outline"
+                        className="flex items-center space-x-2"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        <span>Upload from CSV</span>
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {showHymnEntry && (
+                    <AdminHymnEntry
+                      onHymnCreated={handleHymnCreated}
+                      onCancel={() => setShowHymnEntry(false)}
+                    />
+                  )}
+                  
+                  {showCSVUpload && (
+                    <AdminHymnCSVUpload
+                      onHymnsUploaded={handleHymnsUploaded}
+                      onCancel={() => setShowCSVUpload(false)}
+                    />
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 

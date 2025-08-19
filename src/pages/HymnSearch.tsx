@@ -86,7 +86,7 @@ const HymnSearch = () => {
                         {hymn.title}
                       </h3>
                       <p className="church-text text-muted-foreground italic">
-                        {hymn.content.split('\n')[0].substring(0, 100)}...
+                        {hymn.verses[0]?.lines[0]?.substring(0, 100) || 'No preview available'}...
                       </p>
                     </div>
                   </div>
