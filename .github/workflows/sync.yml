@@ -12,7 +12,7 @@ jobs:
     - name: Checkout church repo
       uses: actions/checkout@v3
       with:
-        token: ${{ secrets.CHURCH_REPO_TOKEN }}
+        token: ${{ secrets.PERSONAL_REPO_TOKEN }}
 
     # 2. Configure Git
     - name: Configure Git
