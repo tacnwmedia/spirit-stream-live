@@ -1,18 +1,19 @@
 name: Sync Personal Repo to Church Repo
 
 on:
-  workflow_dispatch: # manual trigger only
+  workflow_dispatch: # run manually
 
 jobs:
   sync:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Checkout church repo using a token with write access
+    # 1. Checkout church repo (target) with CHURCH_PAT
     - name: Checkout church repo
       uses: actions/checkout@v3
       with:
-        token: ${{ secrets.PERSONAL_REPO_TOKEN }}
+        repository: tacnwmedia/spirit-stream-live
+        token: ${{ secrets.CHURCH_PAT }}
 
     # 2. Configure Git
     - name: Configure Git
@@ -23,27 +24,22 @@ jobs:
     # 3. Add personal repo as remote and fetch
     - name: Add personal repo as remote
       run: |
-        git remote add personal https://Akin-og:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/Akin-og/spirit-stream-live.git
-        git fetch personal
+        git remote add personal https://x-access-token:${{ secrets.PERSONAL_PAT }}@github.com/Akin-og/spirit-stream-live.git
+        git fetch personal main
 
     # 4. Backup current main branch of church repo
     - name: Backup church repo main branch
       run: |
-        git branch backup-main-$(date +%Y%m%d%H%M%S)
-        git push origin HEAD:refs/heads/backup-main-$(date +%Y%m%d%H%M%S)
+        backup_branch="backup-main-$(date +%Y%m%d%H%M%S)"
+        git branch $backup_branch
+        git push origin $backup_branch
 
     # 5. Merge personal repo into church repo
     - name: Merge personal repo main into church repo
       run: |
         git checkout main
         git merge personal/main --allow-unrelated-histories -m "Sync from personal repo"
-        # Optional: for a clean single commit instead of full history, use:
-        # git merge --squash personal/main
-        # git commit -m "Sync from personal repo (squash)"
 
     # 6. Push changes to church repo
     - name: Push changes to church repo
-      run: |
-        git push origin main
-        # Optional: force push if you want exact mirror (WARNING: overwrites history)
-        # git push origin main --force
+      run: git push origin main
