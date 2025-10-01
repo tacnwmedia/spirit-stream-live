@@ -2,7 +2,7 @@ name: Sync Personal Repo to Church Repo
 
 # Only manual trigger
 on:
-workflow_dispatch: # allows you to trigger the workflow manually from GitHub
+workflow_dispatch:
 
 jobs:
 sync:
@@ -21,7 +21,7 @@ git config user.email "action@github.com"
 
 - name: Add personal repo as remote
 run: |
-git remote add personal https://<Akin-og>:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/<Akin-og>/<spirit-stream-live>.git
+git remote add personal https://Akin-og:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/Akin-og/spirit-stream-live.git
 git fetch personal
 
 - name: Merge personal repo main into church repo
