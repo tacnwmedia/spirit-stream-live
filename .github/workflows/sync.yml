@@ -24,7 +24,7 @@ jobs:
     # 3. Add personal repo as remote and fetch
     - name: Add personal repo as remote
       run: |
-        git remote add personal https://x-access-token:${{ secrets.PERSONAL_PAT }}@github.com/Akin-og/spirit-stream-live.git
+        git remote add personal https://x-access-token:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/Akin-og/spirit-stream-live.git
         git fetch personal main
 
     # 4. Backup current main branch of church repo
