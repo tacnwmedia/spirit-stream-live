@@ -1,34 +1,49 @@
 name: Sync Personal Repo to Church Repo
 
-# Only manual trigger
 on:
-workflow_dispatch:
+  workflow_dispatch: # manual trigger only
 
 jobs:
-sync:
-runs-on: ubuntu-latest
+  sync:
+    runs-on: ubuntu-latest
 
-steps:
-- name: Checkout church repo
-uses: actions/checkout@v3
-with:
-token: ${{ secrets.PERSONAL_REPO_TOKEN }}
+    steps:
+    # 1. Checkout church repo using a token with write access
+    - name: Checkout church repo
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.CHURCH_REPO_TOKEN }}
 
-- name: Configure Git
-run: |
-  git config user.name "GitHub Action"
-  git config user.email "action@github.com"
+    # 2. Configure Git
+    - name: Configure Git
+      run: |
+        git config user.name "GitHub Action"
+        git config user.email "action@github.com"
 
-- name: Add personal repo as remote
-run: |
-  git remote add personal https://Akin-og:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/Akin-og/spirit-stream-live.git
-  git fetch personal
+    # 3. Add personal repo as remote and fetch
+    - name: Add personal repo as remote
+      run: |
+        git remote add personal https://Akin-og:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/Akin-og/spirit-stream-live.git
+        git fetch personal
 
-- name: Merge personal repo main into church repo
-run: |
-  git checkout main
-  git merge personal/main --allow-unrelated-histories -m "Sync from personal repo"
+    # 4. Backup current main branch of church repo
+    - name: Backup church repo main branch
+      run: |
+        git branch backup-main-$(date +%Y%m%d%H%M%S)
+        git push origin HEAD:refs/heads/backup-main-$(date +%Y%m%d%H%M%S)
 
-- name: Push changes to church repo
-run: |
-  git push origin main
+    # 5. Merge personal repo into church repo
+    - name: Merge personal repo main into church repo
+      run: |
+        git checkout main
+        git merge personal/main --allow-unrelated-histories -m "Sync from personal repo"
+        # Optional: for a clean single commit instead of full history, use:
+        # git merge --squash personal/main
+        # git commit -m "Sync from personal repo (squash)"
+
+    # 6. Push changes to church repo
+    - name: Push changes to church repo
+      run: |
+        git push origin main
+        # Optional: force push if you want exact mirror (WARNING: overwrites history)
+        # git push origin main --force
