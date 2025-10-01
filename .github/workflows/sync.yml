@@ -1,7 +1,7 @@
 name: Sync Personal Repo to Church Repo
 
 on:
-  workflow_dispatch: # run manually
+  workflow_dispatch: # manual trigger
 
 jobs:
   sync:
@@ -21,25 +21,33 @@ jobs:
         git config user.name "GitHub Action"
         git config user.email "action@github.com"
 
-    # 3. Add personal repo as remote and fetch
+    # 3. Set up SSH key for personal repo
+    - name: Set up SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.PERSONAL_REPO_TOKEN }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+    # 4. Add personal repo as SSH remote and fetch
     - name: Add personal repo as remote
       run: |
-        git remote add personal https://x-access-token:${{ secrets.PERSONAL_REPO_TOKEN }}@github.com/Akin-og/spirit-stream-live.git
+        git remote add personal git@github.com:Akin-og/spirit-stream-live.git
         git fetch personal main
 
-    # 4. Backup current main branch of church repo
+    # 5. Backup current main branch of church repo
     - name: Backup church repo main branch
       run: |
         backup_branch="backup-main-$(date +%Y%m%d%H%M%S)"
         git branch $backup_branch
         git push origin $backup_branch
 
-    # 5. Merge personal repo into church repo
+    # 6. Merge personal repo into church repo
     - name: Merge personal repo main into church repo
       run: |
         git checkout main
         git merge personal/main --allow-unrelated-histories -m "Sync from personal repo"
 
-    # 6. Push changes to church repo
+    # 7. Push changes to church repo
     - name: Push changes to church repo
       run: git push origin main
