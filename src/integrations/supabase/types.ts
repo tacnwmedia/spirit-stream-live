@@ -227,7 +227,7 @@ export type Database = {
           created_at: string | null
           details: Json | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
           user_id: string | null
         }
@@ -236,7 +236,7 @@ export type Database = {
           created_at?: string | null
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -245,7 +245,7 @@ export type Database = {
           created_at?: string | null
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -307,34 +307,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_access_email: {
-        Args: { target_user_id: string }
-        Returns: boolean
+      can_access_email: { Args: { target_user_id: string }; Returns: boolean }
+      cleanup_old_admin_data: {
+        Args: never
+        Returns: {
+          deleted_admin_logs: number
+          deleted_daily_hymns: number
+        }[]
       }
       cleanup_old_records: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           deleted_events: number
           deleted_topics: number
         }[]
       }
-      delete_all_events: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      delete_all_topics: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      delete_all_events: { Args: never; Returns: number }
+      delete_all_topics: { Args: never; Returns: number }
       ensure_profile_exists: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           role: string
           user_id: string
         }[]
       }
       get_all_hymns: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           has_chorus: boolean
           hymn_number: number
@@ -343,7 +341,7 @@ export type Database = {
         }[]
       }
       get_current_month_anniversaries: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           anniversary_date: string
           id: string
@@ -351,23 +349,17 @@ export type Database = {
         }[]
       }
       get_current_month_birthdays: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           birthday: string
           id: string
           name: string
         }[]
       }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_own_email: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_role: { Args: never; Returns: string }
+      get_own_email: { Args: never; Returns: string }
       get_own_profile_basic: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           role: string
@@ -375,22 +367,10 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_secure_email: {
-        Args: { target_user_id?: string }
-        Returns: string
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      refresh_hymns_index: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      update_user_profile: {
-        Args: { p_email?: string }
-        Returns: boolean
-      }
+      get_secure_email: { Args: { target_user_id?: string }; Returns: string }
+      is_admin: { Args: never; Returns: boolean }
+      refresh_hymns_index: { Args: never; Returns: undefined }
+      update_user_profile: { Args: { p_email?: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
