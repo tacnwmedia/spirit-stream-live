@@ -16,6 +16,7 @@ import AdminHymnEntry from "@/components/AdminHymnEntry";
 import AdminHymnCSVUpload from "@/components/AdminHymnCSVUpload";
 import AdminWeddingAnniversaryManager from "@/components/AdminWeddingAnniversaryManager";
 import AdminTopicManager from "@/components/AdminTopicManager";
+import AdminHymnEditor from "@/components/AdminHymnEditor";
 
 interface DailyHymns {
   opening_hymn_number: number | null;
@@ -38,6 +39,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showHymnEntry, setShowHymnEntry] = useState(false);
   const [showCSVUpload, setShowCSVUpload] = useState(false);
+  const [showHymnEditor, setShowHymnEditor] = useState(false);
 
   useEffect(() => {
     const checkAuthAndLoadData = async () => {
@@ -314,7 +316,7 @@ const AdminDashboard = () => {
                   <CardDescription>Add new hymns or upload from CSV file</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {!showHymnEntry && !showCSVUpload && (
+                  {!showHymnEntry && !showCSVUpload && !showHymnEditor && (
                     <div className="flex flex-col sm:flex-row gap-4">
                       <Button 
                         onClick={() => setShowHymnEntry(true)}
@@ -322,6 +324,14 @@ const AdminDashboard = () => {
                       >
                         <Music className="w-4 h-4 flex-shrink-0" />
                         <span>Add New Hymn</span>
+                      </Button>
+                      <Button 
+                        onClick={() => setShowHymnEditor(true)}
+                        variant="outline"
+                        className="flex items-center space-x-2 w-full sm:w-auto"
+                      >
+                        <Settings className="w-4 h-4 flex-shrink-0" />
+                        <span>Edit Hymn</span>
                       </Button>
                       <Button 
                         onClick={() => setShowCSVUpload(true)}
@@ -354,6 +364,12 @@ const AdminDashboard = () => {
                     <AdminHymnCSVUpload
                       onHymnsUploaded={handleHymnsUploaded}
                       onCancel={() => setShowCSVUpload(false)}
+                    />
+                  )}
+                  
+                  {showHymnEditor && (
+                    <AdminHymnEditor
+                      onCancel={() => setShowHymnEditor(false)}
                     />
                   )}
                 </CardContent>
