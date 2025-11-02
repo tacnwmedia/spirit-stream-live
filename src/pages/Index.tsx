@@ -133,13 +133,11 @@ const Index = () => {
           
           {/* Communion Hymn - Only on First Sunday */}
           {communionHymn && (
-            <div className="max-w-md mx-auto">
-              <HymnDisplay 
-                title="Communion Hymn" 
-                hymnNumber={333} 
-                hymnTitle={communionHymn.title} 
-              />
-            </div>
+            <HymnDisplay 
+              title="Communion Hymn" 
+              hymnNumber={333} 
+              hymnTitle={communionHymn.title} 
+            />
           )}
           
           {/* Watchword Row */}
