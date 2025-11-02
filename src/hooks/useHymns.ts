@@ -116,9 +116,13 @@ export const useHymns = () => {
         hymn.fullContent += ' ' + line.text;
       });
 
-      // Sort verses by number
+      // Sort verses by number and renumber them sequentially
       hymnMap.forEach(hymn => {
         hymn.verses.sort((a, b) => a.number - b.number);
+        // Renumber verses sequentially (1, 2, 3, etc.) regardless of original numbering
+        hymn.verses.forEach((verse, index) => {
+          verse.number = index + 1;
+        });
         hymn.fullContent = hymn.fullContent.trim();
       });
 
