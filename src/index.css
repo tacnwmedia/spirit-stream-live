@@ -272,3 +272,15 @@ All colors MUST be HSL.
 .church-card.no-load-animation:hover {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
+/* 3D Verse scroll effect - smooth transitions */
+.verse-3d-container {
+  perspective: 1200px;
+  perspective-origin: center 40%;
+}
+
+.verse-card-3d {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
