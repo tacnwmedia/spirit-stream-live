@@ -94,7 +94,7 @@ const HymnView = () => {
       
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="church-card mb-8">
+        <div className="church-card no-load-animation mb-8">
           <div className="flex items-center justify-between mb-6">
             <Button 
               onClick={() => navigate("/")} 

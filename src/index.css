@@ -264,3 +264,11 @@ All colors MUST be HSL.
     transform: none;
   }
 }
+
+/* Disable transform transition on page load for church-card */
+.church-card.no-load-animation {
+  transition: box-shadow 0.3s ease;
+}
+.church-card.no-load-animation:hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
