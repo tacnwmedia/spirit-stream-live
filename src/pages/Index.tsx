@@ -7,11 +7,14 @@ import EventCalendarLive from "@/components/EventCalendarLive";
 import BirthdayDisplayLive from "@/components/BirthdayDisplayLive";
 import WeddingAnniversaryDisplayLive from "@/components/WeddingAnniversaryDisplayLive";
 import SocialFooter from "@/components/SocialFooter";
+import AnnouncementBanner from "@/components/AnnouncementBanner";
+import SnowEffect from "@/components/SnowEffect";
 import { Link } from "react-router-dom";
 import { Gift, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useHymns } from "@/hooks/useHymns";
+import { useWeather } from "@/contexts/WeatherContext";
 
 interface OtherHymn {
   id: string;
@@ -34,6 +37,7 @@ const Index = () => {
     scriptures: string;
   } | null>(null);
   const { getHymnByNumber } = useHymns();
+  const { weather } = useWeather();
 
   useEffect(() => {
     loadDailyHymns();
@@ -125,6 +129,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Snow Effect - Only shows when weather is snowy */}
+      {weather.isSnowing && <SnowEffect />}
+      
+      {/* Announcement Banner */}
+      <AnnouncementBanner />
+      
       <Navigation />
       
       <div className="max-w-6xl mx-auto px-4 py-8">

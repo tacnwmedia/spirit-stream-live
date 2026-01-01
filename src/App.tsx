@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SecurityHeader from "@/components/SecurityHeader";
 import ScrollToTop from "@/components/ScrollToTop";
 import NewYearCountdown from "@/components/NewYearCountdown";
+import { WeatherProvider } from "@/contexts/WeatherContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import HymnSearch from "./pages/HymnSearch";
@@ -23,12 +24,13 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <SecurityHeader />
-      <Toaster />
-      <Sonner />
-      <NewYearCountdown />
-      <BrowserRouter>
+    <WeatherProvider>
+      <TooltipProvider>
+        <SecurityHeader />
+        <Toaster />
+        <Sonner />
+        <NewYearCountdown />
+        <BrowserRouter>
         <ScrollToTop />
         <Routes>
           <Route path="/" element={<Index />} />
@@ -45,8 +47,9 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </WeatherProvider>
   </QueryClientProvider>
 );
 

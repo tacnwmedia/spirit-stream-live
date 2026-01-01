@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Settings, LogOut, Music, Calendar, Users, BookOpen, Heart, MessageCircle, RefreshCw, Plus, Trash2, Pencil } from "lucide-react";
+import { Settings, LogOut, Music, Calendar, Users, BookOpen, Heart, MessageCircle, RefreshCw, Plus, Trash2, Pencil, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navigation from "@/components/Navigation";
@@ -49,6 +52,12 @@ const AdminDashboard = () => {
   const [showHymnEntry, setShowHymnEntry] = useState(false);
   const [showCSVUpload, setShowCSVUpload] = useState(false);
   const [showHymnEditor, setShowHymnEditor] = useState(false);
+  
+  // Announcement state
+  const [announcementMessage, setAnnouncementMessage] = useState("");
+  const [announcementDuration, setAnnouncementDuration] = useState("24"); // hours
+  const [announcementActive, setAnnouncementActive] = useState(false);
+  const [existingAnnouncementId, setExistingAnnouncementId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuthAndLoadData = async () => {
@@ -130,6 +139,26 @@ const AdminDashboard = () => {
 
       if (watchwordData) {
         setWatchword(watchwordData.setting_value || "");
+      }
+
+      // Load active announcement
+      const { data: announcementData } = await supabase
+        .from('announcements')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (announcementData) {
+        setExistingAnnouncementId(announcementData.id);
+        setAnnouncementMessage(announcementData.message);
+        setAnnouncementActive(announcementData.is_active);
+        // Calculate remaining hours from expires_at
+        const expiresAt = new Date(announcementData.expires_at);
+        const now = new Date();
+        const hoursRemaining = Math.max(1, Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60)));
+        setAnnouncementDuration(String(hoursRemaining));
       }
     } catch (error) {
       console.error('Failed to load church data:', error);
@@ -247,6 +276,96 @@ const AdminDashboard = () => {
     }
   };
 
+  const saveAnnouncement = async () => {
+    try {
+      if (!announcementMessage.trim()) {
+        toast({
+          title: "Error",
+          description: "Please enter an announcement message.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + parseInt(announcementDuration));
+
+      if (existingAnnouncementId) {
+        // Update existing announcement
+        const { error } = await supabase
+          .from('announcements')
+          .update({
+            message: announcementMessage,
+            expires_at: expiresAt.toISOString(),
+            is_active: announcementActive,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingAnnouncementId);
+
+        if (error) throw error;
+        await logAdminAction('Updated announcement');
+      } else {
+        // Create new announcement
+        const { data, error } = await supabase
+          .from('announcements')
+          .insert({
+            message: announcementMessage,
+            expires_at: expiresAt.toISOString(),
+            is_active: announcementActive,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        setExistingAnnouncementId(data.id);
+        await logAdminAction('Created announcement');
+      }
+
+      toast({
+        title: "Announcement Saved",
+        description: announcementActive ? "Your announcement is now live." : "Announcement saved (inactive).",
+      });
+    } catch (error) {
+      console.error('Failed to save announcement:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save announcement.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteAnnouncement = async () => {
+    try {
+      if (!existingAnnouncementId) return;
+
+      const { error } = await supabase
+        .from('announcements')
+        .delete()
+        .eq('id', existingAnnouncementId);
+
+      if (error) throw error;
+
+      setExistingAnnouncementId(null);
+      setAnnouncementMessage("");
+      setAnnouncementDuration("24");
+      setAnnouncementActive(false);
+      await logAdminAction('Deleted announcement');
+
+      toast({
+        title: "Announcement Deleted",
+        description: "The announcement has been removed.",
+      });
+    } catch (error) {
+      console.error('Failed to delete announcement:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete announcement.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleHymnCreated = (hymnNumber: number) => {
     setShowHymnEntry(false);
     toast({
@@ -354,7 +473,7 @@ const AdminDashboard = () => {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="hymns" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 h-auto p-2">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 h-auto p-2">
             <TabsTrigger value="hymns" className="flex flex-col items-center justify-center gap-2 py-3 px-2 h-auto">
               <Music className="w-5 h-5" />
               <span className="text-xs sm:text-sm">Hymns</span>
@@ -369,6 +488,13 @@ const AdminDashboard = () => {
             <TabsTrigger value="topics" className="flex flex-col items-center justify-center gap-2 py-3 px-2 h-auto">
               <MessageCircle className="w-5 h-5" />
               <span className="text-xs sm:text-sm">Topics</span>
+            </TabsTrigger>
+            <TabsTrigger value="announcements" className="flex flex-col items-center justify-center gap-2 py-3 px-2 h-auto">
+              <Megaphone className="w-5 h-5" />
+              <span className="text-xs sm:text-sm">
+                <span className="hidden sm:inline">Announcements</span>
+                <span className="sm:hidden">Announce</span>
+              </span>
             </TabsTrigger>
             <TabsTrigger value="events" className="flex flex-col items-center justify-center gap-2 py-3 px-2 h-auto">
               <Calendar className="w-5 h-5" />
@@ -550,6 +676,81 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <AdminTopicManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="announcements">
+            <Card>
+              <CardHeader>
+                <CardTitle>Announcements</CardTitle>
+                <CardDescription>Create announcements that display on the main page</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="announcement-message">Announcement Message</Label>
+                    <Textarea
+                      id="announcement-message"
+                      placeholder="Enter your announcement message..."
+                      value={announcementMessage}
+                      onChange={(e) => setAnnouncementMessage(e.target.value)}
+                      className="min-h-[100px]"
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="announcement-duration">Duration</Label>
+                      <Select value={announcementDuration} onValueChange={setAnnouncementDuration}>
+                        <SelectTrigger id="announcement-duration">
+                          <SelectValue placeholder="Select duration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 hour</SelectItem>
+                          <SelectItem value="6">6 hours</SelectItem>
+                          <SelectItem value="12">12 hours</SelectItem>
+                          <SelectItem value="24">1 day</SelectItem>
+                          <SelectItem value="48">2 days</SelectItem>
+                          <SelectItem value="72">3 days</SelectItem>
+                          <SelectItem value="168">1 week</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="announcement-active">Status</Label>
+                      <div className="flex items-center space-x-3 pt-2">
+                        <Switch
+                          id="announcement-active"
+                          checked={announcementActive}
+                          onCheckedChange={setAnnouncementActive}
+                        />
+                        <Label htmlFor="announcement-active" className="font-normal">
+                          {announcementActive ? "Active (visible to users)" : "Inactive (hidden)"}
+                        </Label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button onClick={saveAnnouncement} className="flex-1">
+                    {existingAnnouncementId ? "Update Announcement" : "Create Announcement"}
+                  </Button>
+                  {existingAnnouncementId && (
+                    <Button onClick={deleteAnnouncement} variant="destructive">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  )}
+                </div>
+
+                {existingAnnouncementId && (
+                  <p className="text-sm text-muted-foreground">
+                    An announcement already exists. You can update it or delete it to create a new one.
+                  </p>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

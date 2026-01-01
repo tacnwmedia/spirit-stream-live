@@ -106,7 +106,7 @@ const HymnView = () => {
             </Button>
           </div>
           
-          <div className="text-center">
+          <div className="text-center animate-fade-in">
             {(isOpeningHymn || isClosingHymn) && (
               <div className="text-lg font-medium text-muted-foreground mb-2">
                 {isOpeningHymn ? "Opening Hymn" : "Closing Hymn"}

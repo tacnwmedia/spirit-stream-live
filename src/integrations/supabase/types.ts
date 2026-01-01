@@ -38,6 +38,33 @@ export type Database = {
         }
         Relationships: []
       }
+      announcements: {
+        Row: {
+          id: string
+          message: string
+          expires_at: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          message: string
+          expires_at: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          message?: string
+          expires_at?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       birthdays: {
         Row: {
           birthday: string
