@@ -172,16 +172,21 @@ const AdminDashboard = () => {
       }
 
       // Save other hymns - delete existing and insert new
-      const { error: deleteError } = await supabase
+      // Note: We use a select first to check if there are rows, then delete only if rows exist
+      // This avoids RLS 403 errors on empty tables
+      const { data: existingOtherHymns } = await supabase
         .from('daily_other_hymns')
-        .delete()
+        .select('id')
         .eq('hymn_date', today);
 
-      // Ignore delete errors if no rows existed (not a real error)
-      if (deleteError) {
-        console.error('Delete other hymns error:', deleteError);
-        // Only throw if it's not a "no rows" situation
-        if (deleteError.code !== 'PGRST116') {
+      if (existingOtherHymns && existingOtherHymns.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('daily_other_hymns')
+          .delete()
+          .eq('hymn_date', today);
+
+        if (deleteError) {
+          console.error('Delete other hymns error:', deleteError);
           throw deleteError;
         }
       }
