@@ -150,25 +150,16 @@ const Index = () => {
         
         {/* Main Content Grid */}
         <div className="grid gap-6 md:gap-8 mt-8">
-          {/* Hymns Row - Opening and Closing */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {dailyHymns.opening_hymn_number && (
-              <HymnDisplay 
-                title="Opening Hymn" 
-                hymnNumber={dailyHymns.opening_hymn_number} 
-                hymnTitle={openingHymn?.title || "Loading..."} 
-              />
-            )}
-            {dailyHymns.closing_hymn_number && (
-              <HymnDisplay 
-                title="Closing Hymn" 
-                hymnNumber={dailyHymns.closing_hymn_number} 
-                hymnTitle={closingHymn?.title || "Loading..."} 
-              />
-            )}
-          </div>
+          {/* Opening Hymn - Always First */}
+          {dailyHymns.opening_hymn_number && (
+            <HymnDisplay 
+              title="Opening Hymn" 
+              hymnNumber={dailyHymns.opening_hymn_number} 
+              hymnTitle={openingHymn?.title || "Loading..."} 
+            />
+          )}
 
-          {/* Other Hymns */}
+          {/* Other Hymns - In order they were added (between Opening and Closing) */}
           {otherHymns.length > 0 && (
             <div className="grid md:grid-cols-2 gap-6">
               {otherHymns.map((hymn) => {
@@ -184,8 +175,17 @@ const Index = () => {
               })}
             </div>
           )}
+
+          {/* Closing Hymn - Always Last (before Communion if applicable) */}
+          {dailyHymns.closing_hymn_number && (
+            <HymnDisplay 
+              title="Closing Hymn" 
+              hymnNumber={dailyHymns.closing_hymn_number} 
+              hymnTitle={closingHymn?.title || "Loading..."} 
+            />
+          )}
           
-          {/* Communion Hymn - Only on First Sunday */}
+          {/* Communion Hymn - Only on First Sunday (after Closing) */}
           {communionHymn && (
             <HymnDisplay 
               title="Communion Hymn" 

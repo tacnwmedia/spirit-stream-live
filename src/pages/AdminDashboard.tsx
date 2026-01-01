@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Settings, LogOut, Music, Calendar, Users, BookOpen, Heart, MessageCircle, RefreshCw, Plus, Trash2 } from "lucide-react";
+import { Settings, LogOut, Music, Calendar, Users, BookOpen, Heart, MessageCircle, RefreshCw, Plus, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navigation from "@/components/Navigation";
@@ -306,6 +307,12 @@ const AdminDashboard = () => {
     ));
   };
 
+  const updateOtherHymnLabel = (index: number, label: string) => {
+    setOtherHymns(prev => prev.map((h, i) => 
+      i === index ? { ...h, label } : h
+    ));
+  };
+
   const removeOtherHymn = (index: number) => {
     setOtherHymns(prev => prev.filter((_, i) => i !== index));
   };
@@ -403,21 +410,31 @@ const AdminDashboard = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   {otherHymns.map((hymn, index) => (
                     <div key={hymn.id || index} className="relative">
+                      {/* Editable Label Input */}
+                      <div className="mb-2 flex items-center gap-2">
+                        <Pencil className="h-4 w-4 text-muted-foreground" />
+                        <Input
+                          value={hymn.label}
+                          onChange={(e) => updateOtherHymnLabel(index, e.target.value)}
+                          placeholder="Enter display name (e.g., Offertory)"
+                          className="text-sm font-medium"
+                        />
+                        <Button
+                          onClick={() => removeOtherHymn(index)}
+                          variant="destructive"
+                          size="icon"
+                          className="h-8 w-8 flex-shrink-0"
+                          title="Remove this hymn"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <AdminHymnSelector
                         value={hymn.hymn_number}
                         onChange={(number) => updateOtherHymn(index, number)}
-                        label={hymn.label}
+                        label=""
                         placeholder="Select hymn"
                       />
-                      <Button
-                        onClick={() => removeOtherHymn(index)}
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2 h-8 w-8"
-                        title="Remove this hymn"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   ))}
                 </div>
