@@ -177,7 +177,14 @@ const AdminDashboard = () => {
         .delete()
         .eq('hymn_date', today);
 
-      if (deleteError) throw deleteError;
+      // Ignore delete errors if no rows existed (not a real error)
+      if (deleteError) {
+        console.error('Delete other hymns error:', deleteError);
+        // Only throw if it's not a "no rows" situation
+        if (deleteError.code !== 'PGRST116') {
+          throw deleteError;
+        }
+      }
 
       // Insert other hymns that have a hymn number selected
       const otherHymnsToSave = otherHymns
@@ -190,11 +197,15 @@ const AdminDashboard = () => {
         }));
 
       if (otherHymnsToSave.length > 0) {
+        console.log('Saving other hymns:', otherHymnsToSave);
         const { error: otherHymnsError } = await supabase
           .from('daily_other_hymns')
           .insert(otherHymnsToSave);
 
-        if (otherHymnsError) throw otherHymnsError;
+        if (otherHymnsError) {
+          console.error('Insert other hymns error:', otherHymnsError);
+          throw otherHymnsError;
+        }
         
         await logAdminAction(`Updated ${otherHymnsToSave.length} other hymn(s)`);
       }
