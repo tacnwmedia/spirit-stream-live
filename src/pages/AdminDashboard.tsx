@@ -55,7 +55,7 @@ const AdminDashboard = () => {
   
   // Announcement state
   const [announcementMessage, setAnnouncementMessage] = useState("");
-  const [announcementDuration, setAnnouncementDuration] = useState("24"); // hours
+  const [announcementDuration, setAnnouncementDuration] = useState("60"); // minutes
   const [announcementActive, setAnnouncementActive] = useState(false);
   const [existingAnnouncementId, setExistingAnnouncementId] = useState<string | null>(null);
 
@@ -154,11 +154,11 @@ const AdminDashboard = () => {
         setExistingAnnouncementId(announcementData.id);
         setAnnouncementMessage(announcementData.message);
         setAnnouncementActive(announcementData.is_active);
-        // Calculate remaining hours from expires_at
+        // Calculate remaining minutes from expires_at
         const expiresAt = new Date(announcementData.expires_at);
         const now = new Date();
-        const hoursRemaining = Math.max(1, Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60)));
-        setAnnouncementDuration(String(hoursRemaining));
+        const minutesRemaining = Math.max(1, Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60)));
+        setAnnouncementDuration(String(minutesRemaining));
       }
     } catch (error) {
       console.error('Failed to load church data:', error);
@@ -287,8 +287,9 @@ const AdminDashboard = () => {
         return;
       }
 
+      const durationMinutes = parseInt(announcementDuration) || 60;
       const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + parseInt(announcementDuration));
+      expiresAt.setMinutes(expiresAt.getMinutes() + durationMinutes);
 
       if (existingAnnouncementId) {
         // Update existing announcement
@@ -701,21 +702,18 @@ const AdminDashboard = () => {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="announcement-duration">Duration</Label>
-                      <Select value={announcementDuration} onValueChange={setAnnouncementDuration}>
-                        <SelectTrigger id="announcement-duration">
-                          <SelectValue placeholder="Select duration" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1 hour</SelectItem>
-                          <SelectItem value="6">6 hours</SelectItem>
-                          <SelectItem value="12">12 hours</SelectItem>
-                          <SelectItem value="24">1 day</SelectItem>
-                          <SelectItem value="48">2 days</SelectItem>
-                          <SelectItem value="72">3 days</SelectItem>
-                          <SelectItem value="168">1 week</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="announcement-duration">Duration (minutes)</Label>
+                      <Input
+                        id="announcement-duration"
+                        type="number"
+                        min="1"
+                        placeholder="Enter duration in minutes"
+                        value={announcementDuration}
+                        onChange={(e) => setAnnouncementDuration(e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        e.g., 60 = 1 hour, 1440 = 1 day
+                      </p>
                     </div>
 
                     <div className="space-y-2">
