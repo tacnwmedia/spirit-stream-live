@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Gift, Calendar } from "lucide-react";
 import Navigation from "@/components/Navigation";
@@ -13,80 +13,12 @@ interface Birthday {
 const Birthdays = () => {
   const [birthdays, setBirthdays] = useState<Birthday[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
-  
   const currentMonth = new Date().getMonth() + 1;
   const currentMonthName = format(new Date(), "MMMM yyyy");
 
   useEffect(() => {
     loadCurrentMonthBirthdays();
   }, []);
-
-  // Intersection Observer to track which card is most visible
-  useEffect(() => {
-    if (birthdays.length === 0) return;
-
-    const options = {
-      root: null,
-      rootMargin: '-35% 0px -35% 0px',
-      threshold: [0, 0.5, 1],
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-          const index = cardRefs.current.findIndex((ref) => ref === entry.target);
-          if (index !== -1) {
-            setActiveIndex(index);
-          }
-        }
-      });
-    }, options);
-
-    cardRefs.current.forEach((ref) => {
-      if (ref) observer.observe(ref);
-    });
-
-    return () => observer.disconnect();
-  }, [birthdays]);
-
-  // 3D deck of cards style - cards overlap and stack
-  const getCardStyle = useCallback((index: number) => {
-    const diff = index - activeIndex;
-    
-    if (diff === 0) {
-      // Active card - front and center, fully expanded
-      return {
-        transform: 'perspective(1000px) rotateX(0deg) translateZ(0px) scale(1)',
-        opacity: 1,
-        zIndex: 50,
-        marginTop: index === 0 ? '0px' : '-20px',
-        filter: 'blur(0px)',
-      };
-    } else if (diff < 0) {
-      // Previous cards - collapsed upward, stacked behind
-      const distance = Math.abs(diff);
-      return {
-        transform: `perspective(1000px) rotateX(${Math.min(distance * 20, 60)}deg) translateZ(${-distance * 40}px) translateY(${-distance * 5}px) scale(${Math.max(1 - distance * 0.05, 0.8)})`,
-        opacity: Math.max(1 - distance * 0.25, 0.2),
-        zIndex: 50 - distance,
-        marginTop: '-60px', // Overlap cards like a deck
-        filter: `blur(${Math.min(distance * 1, 3)}px)`,
-      };
-    } else {
-      // Next cards - tilted forward, ready to open
-      const distance = Math.abs(diff);
-      return {
-        transform: `perspective(1000px) rotateX(${Math.max(-distance * 20, -60)}deg) translateZ(${-distance * 40}px) translateY(${distance * 5}px) scale(${Math.max(1 - distance * 0.05, 0.8)})`,
-        opacity: Math.max(1 - distance * 0.25, 0.2),
-        zIndex: 50 - distance,
-        marginTop: '-60px', // Overlap cards like a deck
-        filter: `blur(${Math.min(distance * 1, 3)}px)`,
-      };
-    }
-  }, [activeIndex]);
 
   const loadCurrentMonthBirthdays = async () => {
     try {
@@ -139,37 +71,19 @@ const Birthdays = () => {
             <p className="text-muted-foreground">No birthdays this month.</p>
           </div>
         ) : (
-          <div 
-            ref={containerRef}
-            className="verse-3d-container relative pt-4 pb-20"
-          >
-            {birthdays.map((birthday, index) => (
-              <div 
-                key={birthday.id} 
-                ref={(el) => (cardRefs.current[index] = el)}
-                className="church-card verse-card-3d transition-all duration-500 ease-out origin-center"
-                style={getCardStyle(index)}
-              >
+          <div className="grid gap-4 md:gap-6">
+            {birthdays.map((birthday) => (
+              <div key={birthday.id} className="church-card">
                 <div className="flex items-center space-x-4">
-                  <div className="bg-primary text-primary-foreground rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0">
+                  <div className="bg-primary text-primary-foreground rounded-full w-16 h-16 flex items-center justify-center">
                     <Calendar className="w-8 h-8" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-xl font-semibold text-foreground truncate">
-                        {birthday.name}
-                      </h3>
-                      {index === activeIndex && (
-                        <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full flex-shrink-0">
-                          ✨
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(birthday.birthday + 'T00:00:00'), 'MMMM d')}
-                    </p>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-foreground mb-1">
+                      {birthday.name}
+                    </h3>
                   </div>
-                  <div className="text-4xl flex-shrink-0">🎂</div>
+                  <div className="text-4xl">🎂</div>
                 </div>
               </div>
             ))}
