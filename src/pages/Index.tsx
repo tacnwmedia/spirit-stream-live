@@ -41,7 +41,6 @@ const Index = () => {
 
   useEffect(() => {
     loadDailyHymns();
-    loadOtherHymns();
     loadTodaysTopic();
   }, []);
 
@@ -52,32 +51,45 @@ const Index = () => {
         .select('*')
         .order('hymn_date', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (data) {
         setDailyHymns({
           opening_hymn_number: data.opening_hymn_number,
           closing_hymn_number: data.closing_hymn_number,
         });
+        await loadOtherHymns(data.hymn_date);
+      } else {
+        await loadOtherHymns();
       }
     } catch (error) {
       console.error('Failed to load daily hymns:', error);
     }
   };
 
-  const loadOtherHymns = async () => {
+  const loadOtherHymns = async (serviceDate?: string) => {
     try {
-      // Get today's date in YYYY-MM-DD format
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const todayString = `${year}-${month}-${day}`;
+      let targetDate = serviceDate;
+
+      if (!targetDate) {
+        const { data: latestDateData } = await supabase
+          .from('daily_other_hymns')
+          .select('hymn_date')
+          .order('hymn_date', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        targetDate = latestDateData?.hymn_date;
+      }
+
+      if (!targetDate) {
+        setOtherHymns([]);
+        return;
+      }
 
       const { data } = await supabase
         .from('daily_other_hymns')
         .select('*')
-        .eq('hymn_date', todayString)
+        .eq('hymn_date', targetDate)
         .order('display_order');
 
       if (data && data.length > 0) {
@@ -87,6 +99,8 @@ const Index = () => {
           label: h.label || 'Other Hymn',
           display_order: h.display_order,
         })));
+      } else {
+        setOtherHymns([]);
       }
     } catch (error) {
       console.error('Failed to load other hymns:', error);
@@ -171,7 +185,7 @@ const Index = () => {
 
           {/* Other Hymns - In order they were added (between Opening and Closing) */}
           {otherHymns.length > 0 && (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className={otherHymns.length > 1 ? "grid md:grid-cols-2 gap-6" : ""}>
               {otherHymns.map((hymn) => {
                 const hymnData = getHymnByNumber(hymn.hymn_number);
                 return (

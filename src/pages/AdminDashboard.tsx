@@ -99,13 +99,28 @@ const AdminDashboard = () => {
 
   const loadChurchData = async () => {
     try {
-      // Load today's hymns
+      // Load today's hymns (or fallback to latest active hymns)
       const today = new Date().toISOString().split('T')[0];
-      const { data: hymnData } = await supabase
+      let activeHymnDate = today;
+      let { data: hymnData } = await supabase
         .from('daily_hymns')
         .select('*')
         .eq('hymn_date', today)
         .maybeSingle();
+
+      if (!hymnData) {
+        const { data: latestHymnData } = await supabase
+          .from('daily_hymns')
+          .select('*')
+          .order('hymn_date', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (latestHymnData) {
+          hymnData = latestHymnData;
+          activeHymnDate = latestHymnData.hymn_date;
+        }
+      }
 
       if (hymnData) {
         setDailyHymns({
@@ -114,11 +129,11 @@ const AdminDashboard = () => {
         });
       }
 
-      // Load other hymns for today
+      // Load other hymns for this service date
       const { data: otherHymnsData } = await supabase
         .from('daily_other_hymns')
         .select('*')
-        .eq('hymn_date', today)
+        .eq('hymn_date', activeHymnDate)
         .order('display_order');
 
       if (otherHymnsData && otherHymnsData.length > 0) {

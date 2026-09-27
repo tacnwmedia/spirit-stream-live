@@ -20,6 +20,7 @@ const HymnView = () => {
     opening_hymn_number: null,
     closing_hymn_number: null,
   });
+  const [serviceHymns, setServiceHymns] = useState<{ number: number; label: string }[]>([]);
   
   const [activeVerseIndex, setActiveVerseIndex] = useState(0);
   const verseRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -103,6 +104,27 @@ const HymnView = () => {
           opening_hymn_number: data.opening_hymn_number,
           closing_hymn_number: data.closing_hymn_number,
         });
+
+        const { data: otherHymnsData } = await supabase
+          .from('daily_other_hymns')
+          .select('*')
+          .eq('hymn_date', data.hymn_date)
+          .order('display_order');
+
+        const list: { number: number; label: string }[] = [];
+        if (data.opening_hymn_number) {
+          list.push({ number: data.opening_hymn_number, label: "Opening Hymn" });
+        }
+        if (otherHymnsData && otherHymnsData.length > 0) {
+          otherHymnsData.forEach(h => {
+            list.push({ number: h.hymn_number, label: h.label || "Other Hymn" });
+          });
+        }
+        if (data.closing_hymn_number) {
+          list.push({ number: data.closing_hymn_number, label: "Closing Hymn" });
+        }
+
+        setServiceHymns(list);
       }
     } catch (error) {
       console.error('Failed to load daily hymns:', error);
@@ -114,11 +136,11 @@ const HymnView = () => {
     window.scrollTo(0, 0);
   };
 
-  const isOpeningHymn = dailyHymns.opening_hymn_number === hymnNumber;
-  const isClosingHymn = dailyHymns.closing_hymn_number === hymnNumber;
-  const otherHymnNumber = isOpeningHymn ? dailyHymns.closing_hymn_number : 
-                         isClosingHymn ? dailyHymns.opening_hymn_number : null;
-  const otherHymnType = isOpeningHymn ? "Closing Hymn" : "Opening Hymn";
+  const currentServiceIndex = serviceHymns.findIndex(h => h.number === hymnNumber);
+  const currentServiceHymn = currentServiceIndex !== -1 ? serviceHymns[currentServiceIndex] : null;
+  const nextServiceHymn = currentServiceIndex !== -1 && serviceHymns.length > 1
+    ? serviceHymns[(currentServiceIndex + 1) % serviceHymns.length]
+    : null;
 
   if (loading) {
     return (
@@ -171,9 +193,9 @@ const HymnView = () => {
           </div>
           
           <div className="text-center hymn-title-fade">
-            {(isOpeningHymn || isClosingHymn) && (
+            {currentServiceHymn && (
               <div className="text-lg font-medium text-muted-foreground mb-2">
-                {isOpeningHymn ? "Opening Hymn" : "Closing Hymn"}
+                {currentServiceHymn.label}
               </div>
             )}
             <div className="flex items-center justify-center mb-4">
@@ -267,13 +289,13 @@ const HymnView = () => {
               <span className="hidden xs:inline">Return to Homepage</span>
               <span className="xs:hidden">Home</span>
             </a>
-            {otherHymnNumber && (
+            {nextServiceHymn && (
               <Button 
-                onClick={() => handleHymnNavigation(otherHymnNumber)}
+                onClick={() => handleHymnNavigation(nextServiceHymn.number)}
                 variant="outline"
                 className="flex items-center space-x-2 w-full sm:w-auto text-xs sm:text-sm"
               >
-                <span>View {otherHymnType}</span>
+                <span>View {nextServiceHymn.label}</span>
                 <ArrowRight className="w-4 h-4 flex-shrink-0" />
               </Button>
             )}
