@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import Navigation from "@/components/Navigation";
 import SocialFooter from "@/components/SocialFooter";
 import { supabase } from "@/integrations/supabase/client";
+import { getLocalDateString, formatDateString, formatEventTime } from "@/lib/dateUtils";
 
 interface Event {
   id: string;
@@ -27,7 +28,7 @@ const Events = () => {
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .gte('event_date', new Date().toISOString().split('T')[0])
+        .gte('event_date', getLocalDateString())
         .order('event_date', { ascending: true });
 
       if (error) {
@@ -75,10 +76,10 @@ const Events = () => {
                     <div className="text-center">
                       <div className="bg-primary text-primary-foreground rounded-lg p-3 mb-2">
                         <div className="text-2xl font-bold">
-                          {format(new Date(event.event_date), "dd")}
+                          {formatDateString(event.event_date, "dd")}
                         </div>
                         <div className="text-sm">
-                          {format(new Date(event.event_date), "MMM")}
+                          {formatDateString(event.event_date, "MMM")}
                         </div>
                       </div>
                     </div>
@@ -93,13 +94,13 @@ const Events = () => {
                       <div className="flex items-center text-muted-foreground">
                         <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                         <span className="church-text">
-                          {format(new Date(event.event_date), "EEEE, MMMM do, yyyy")}
+                          {formatDateString(event.event_date, "EEEE, MMMM do, yyyy")}
                         </span>
                       </div>
                       {event.event_time && (
                         <div className="flex items-center text-muted-foreground">
                           <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
-                          <span className="church-text">{event.event_time}</span>
+                          <span className="church-text">{formatEventTime(event.event_time)}</span>
                         </div>
                       )}
                     </div>

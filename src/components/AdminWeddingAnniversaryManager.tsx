@@ -7,6 +7,7 @@ import { Trash2, Edit, Upload, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/adminLogger";
 import { useToast } from "@/hooks/use-toast";
+import { formatDateString } from "@/lib/dateUtils";
 
 interface WeddingAnniversary {
   id: string;
@@ -276,8 +277,8 @@ const AdminWeddingAnniversaryManager = () => {
                 <div key={anniversary.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <p className="font-medium">{anniversary.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(anniversary.anniversary_date).toLocaleDateString()}
+                    <p className="text-muted-foreground text-sm">
+                      {formatDateString(anniversary.anniversary_date, 'MMMM d, yyyy')}
                     </p>
                   </div>
                   <div className="flex space-x-1">

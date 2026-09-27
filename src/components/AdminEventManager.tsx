@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/adminLogger";
 import { format } from "date-fns";
+import { formatDateString, formatEventTime } from "@/lib/dateUtils";
 
 interface Event {
   id: string;
@@ -316,8 +317,8 @@ const AdminEventManager = () => {
                   <div className="flex-1">
                     <h4 className="font-semibold text-lg">{event.title}</h4>
                     <p className="text-muted-foreground">
-                      {format(new Date(event.event_date), 'MMMM d, yyyy')}
-                      {event.event_time && ` at ${event.event_time}`}
+                      {formatDateString(event.event_date, 'MMMM d, yyyy')}
+                      {event.event_time && ` at ${formatEventTime(event.event_time)}`}
                     </p>
                     {event.description && (
                       <p className="mt-2 text-sm">{event.description}</p>

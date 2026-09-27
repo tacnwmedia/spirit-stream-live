@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useHymns } from "@/hooks/useHymns";
 import { useWeather } from "@/contexts/WeatherContext";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 interface OtherHymn {
   id: string;
@@ -109,18 +110,23 @@ const Index = () => {
 
   const loadTodaysTopic = async () => {
     try {
-      // Get today's date in YYYY-MM-DD format in local timezone
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const todayString = `${year}-${month}-${day}`;
+      const todayString = getLocalDateString();
       
-      const { data } = await supabase
+      let { data } = await supabase
         .from('topics')
         .select('topic, scriptures')
         .eq('topic_date', todayString)
         .maybeSingle();
+
+      if (!data) {
+        const { data: latestTopic } = await supabase
+          .from('topics')
+          .select('topic, scriptures')
+          .order('topic_date', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        data = latestTopic;
+      }
 
       if (data) {
         setTodaysTopic({

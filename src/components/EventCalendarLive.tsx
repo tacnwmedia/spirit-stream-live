@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { getLocalDateString, formatDateString, formatEventTime } from "@/lib/dateUtils";
 
 interface Event {
   id: string;
@@ -25,7 +26,7 @@ const EventCalendarLive = () => {
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .gte('event_date', new Date().toISOString().split('T')[0])
+        .gte('event_date', getLocalDateString())
         .order('event_date', { ascending: true })
         .limit(4);
 
@@ -78,13 +79,13 @@ const EventCalendarLive = () => {
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />
                   <span className="church-text">
-                    {format(new Date(event.event_date), "EEEE, MMMM do")}
+                    {formatDateString(event.event_date, "EEEE, MMMM do")}
                   </span>
                 </div>
                 {event.event_time && (
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-2" />
-                    <span className="church-text">{event.event_time}</span>
+                    <span className="church-text">{formatEventTime(event.event_time)}</span>
                   </div>
                 )}
                 {event.description && (

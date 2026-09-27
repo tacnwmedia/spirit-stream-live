@@ -13,6 +13,7 @@ import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/adminLogger";
+import { getLocalDateString } from "@/lib/dateUtils";
 import AdminHymnSelector from "@/components/AdminHymnSelector";
 import AdminEventManager from "@/components/AdminEventManager";
 import AdminBirthdayManager from "@/components/AdminBirthdayManager";
@@ -100,7 +101,7 @@ const AdminDashboard = () => {
   const loadChurchData = async () => {
     try {
       // Load today's hymns (or fallback to latest active hymns)
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateString();
       let activeHymnDate = today;
       let { data: hymnData } = await supabase
         .from('daily_hymns')
@@ -193,7 +194,7 @@ const AdminDashboard = () => {
 
   const saveData = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateString();
       
       // Save daily hymns
       const { error: hymnError } = await supabase

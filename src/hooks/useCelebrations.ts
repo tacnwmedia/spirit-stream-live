@@ -27,20 +27,27 @@ export const useCelebrations = () => {
     try {
       setLoading(true);
 
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const startDate = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`;
+      const nextMonthYear = currentMonth === 12 ? currentYear + 1 : currentYear;
+      const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
+      const endDate = `${nextMonthYear}-${nextMonth.toString().padStart(2, '0')}-01`;
+
       // Fetch birthdays and anniversaries in parallel with server-side filtering
       const [birthdaysResponse, anniversariesResponse] = await Promise.all([
         supabase
           .from('birthdays')
           .select('*')
-          .filter('birthday', 'gte', `${new Date().getFullYear()}-${currentMonth.toString().padStart(2, '0')}-01`)
-          .filter('birthday', 'lt', `${new Date().getFullYear()}-${(currentMonth + 1).toString().padStart(2, '0')}-01`)
+          .filter('birthday', 'gte', startDate)
+          .filter('birthday', 'lt', endDate)
           .order('birthday', { ascending: true }),
         
         supabase
           .from('wedding_anniversaries')
           .select('*')
-          .filter('anniversary_date', 'gte', `${new Date().getFullYear()}-${currentMonth.toString().padStart(2, '0')}-01`)
-          .filter('anniversary_date', 'lt', `${new Date().getFullYear()}-${(currentMonth + 1).toString().padStart(2, '0')}-01`)
+          .filter('anniversary_date', 'gte', startDate)
+          .filter('anniversary_date', 'lt', endDate)
           .order('anniversary_date', { ascending: true })
       ]);
 

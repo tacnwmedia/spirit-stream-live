@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Calendar, Heart } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
+import { parseLocalDate } from "@/lib/dateUtils";
 
 interface WeddingAnniversary {
   id: string;
@@ -30,7 +31,7 @@ const WeddingAnniversaries = () => {
         // Filter for current month
         const currentMonth = new Date().getMonth() + 1;
         const currentMonthAnniversaries = data.filter(anniversary => {
-          const anniversaryMonth = new Date(anniversary.anniversary_date).getMonth() + 1;
+          const anniversaryMonth = parseLocalDate(anniversary.anniversary_date).getMonth() + 1;
           return anniversaryMonth === currentMonth;
         });
 
