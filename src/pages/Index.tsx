@@ -15,7 +15,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useHymns } from "@/hooks/useHymns";
 import { useWeather } from "@/contexts/WeatherContext";
-import { getLocalDateString } from "@/lib/dateUtils";
+import { getLocalDateString, getChicagoDate } from "@/lib/dateUtils";
 
 interface OtherHymn {
   id: string;
@@ -142,8 +142,8 @@ const Index = () => {
   const openingHymn = dailyHymns.opening_hymn_number ? getHymnByNumber(dailyHymns.opening_hymn_number) : null;
   const closingHymn = dailyHymns.closing_hymn_number ? getHymnByNumber(dailyHymns.closing_hymn_number) : null;
   
-  // Check if today is the first Sunday of the month
-  const today = new Date();
+  // Check if today is the first Sunday of the month in Chicago time
+  const today = getChicagoDate();
   const isFirstSunday = today.getDay() === 0 && today.getDate() <= 7;
   const communionHymn = isFirstSunday ? getHymnByNumber(333) : null;
 

@@ -1,7 +1,8 @@
 import { format } from "date-fns";
+import { getChicagoDate } from "@/lib/dateUtils";
 
 const TodayInfo = () => {
-  const today = new Date();
+  const today = getChicagoDate();
   
   return (
     <div className="church-card text-center py-4 md:py-5">

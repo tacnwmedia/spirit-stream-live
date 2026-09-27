@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getChicagoDate } from "@/lib/dateUtils";
 
 interface Birthday {
   id: string;
@@ -17,7 +18,7 @@ export const useCelebrations = () => {
   const [birthdays, setBirthdays] = useState<Birthday[]>([]);
   const [anniversaries, setAnniversaries] = useState<WeddingAnniversary[]>([]);
   const [loading, setLoading] = useState(true);
-  const currentMonth = new Date().getMonth() + 1;
+  const currentMonth = getChicagoDate().getMonth() + 1;
 
   useEffect(() => {
     loadCelebrations();
@@ -27,7 +28,7 @@ export const useCelebrations = () => {
     try {
       setLoading(true);
 
-      const now = new Date();
+      const now = getChicagoDate();
       const currentYear = now.getFullYear();
       const startDate = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`;
       const nextMonthYear = currentMonth === 12 ? currentYear + 1 : currentYear;

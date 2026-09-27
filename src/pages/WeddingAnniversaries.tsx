@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Calendar, Heart } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
-import { parseLocalDate } from "@/lib/dateUtils";
+import { parseLocalDate, getChicagoDate, getChicagoMonthName } from "@/lib/dateUtils";
 
 interface WeddingAnniversary {
   id: string;
@@ -28,8 +28,8 @@ const WeddingAnniversaries = () => {
       if (error) throw error;
 
       if (data) {
-        // Filter for current month
-        const currentMonth = new Date().getMonth() + 1;
+        // Filter for current month in Chicago time
+        const currentMonth = getChicagoDate().getMonth() + 1;
         const currentMonthAnniversaries = data.filter(anniversary => {
           const anniversaryMonth = parseLocalDate(anniversary.anniversary_date).getMonth() + 1;
           return anniversaryMonth === currentMonth;
@@ -44,7 +44,7 @@ const WeddingAnniversaries = () => {
     }
   };
 
-  const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
+  const currentMonthName = getChicagoMonthName();
 
   return (
     <div className="min-h-screen bg-background">

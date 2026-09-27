@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getChicagoDate } from "@/lib/dateUtils";
 
 interface Birthday {
   id: string;
@@ -30,8 +31,9 @@ export const useOptimizedCelebrations = () => {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   
-  const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
+  const now = getChicagoDate();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
 
   // Check if we have valid cached data for current month
   const getCachedData = useCallback((): CelebrationCache | null => {

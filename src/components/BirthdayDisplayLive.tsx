@@ -2,10 +2,11 @@ import { Gift, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useOptimizedCelebrations } from "@/hooks/useOptimizedCelebrations";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getChicagoMonthName } from "@/lib/dateUtils";
 
 const BirthdayDisplayLive = () => {
   const { birthdays, loading, isRefreshing } = useOptimizedCelebrations();
-  const currentMonthName = new Date().toLocaleDateString('en-US', { month: 'long' });
+  const currentMonthName = getChicagoMonthName();
   
   console.log('[BirthdayDisplayLive] Component state:', { 
     birthdaysCount: birthdays.length, 

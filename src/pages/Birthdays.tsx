@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Gift, Calendar } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
+import { getChicagoDate, parseLocalDate } from "@/lib/dateUtils";
 
 interface Birthday {
   id: string;
@@ -13,8 +14,8 @@ interface Birthday {
 const Birthdays = () => {
   const [birthdays, setBirthdays] = useState<Birthday[]>([]);
   const [loading, setLoading] = useState(true);
-  const currentMonth = new Date().getMonth() + 1;
-  const currentMonthName = format(new Date(), "MMMM yyyy");
+  const currentMonth = getChicagoDate().getMonth() + 1;
+  const currentMonthName = format(getChicagoDate(), "MMMM yyyy");
 
   useEffect(() => {
     loadCurrentMonthBirthdays();
@@ -35,7 +36,7 @@ const Birthdays = () => {
 
       // Filter birthdays for current month
       const currentMonthBirthdays = (data || []).filter(birthday => {
-        const birthdayDate = new Date(birthday.birthday + 'T00:00:00');
+        const birthdayDate = parseLocalDate(birthday.birthday);
         return birthdayDate.getMonth() + 1 === currentMonth;
       });
 
