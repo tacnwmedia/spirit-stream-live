@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
-import { format } from "date-fns";
 import Navigation from "@/components/Navigation";
 import SocialFooter from "@/components/SocialFooter";
 import { supabase } from "@/integrations/supabase/client";

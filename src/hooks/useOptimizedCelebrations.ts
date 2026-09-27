@@ -80,7 +80,7 @@ export const useOptimizedCelebrations = () => {
 
   // Optimized Supabase query using RPC functions that filter by month only (ignoring year)
   const fetchFromSupabase = useCallback(async (): Promise<{ birthdays: Birthday[], anniversaries: WeddingAnniversary[] }> => {
-    console.log(`[useOptimizedCelebrations] Fetching celebrations for current month using RPC functions`);
+    
     
     const [birthdaysResponse, anniversariesResponse] = await Promise.all([
       // Use RPC to get current month birthdays (ignoring year)
@@ -90,8 +90,7 @@ export const useOptimizedCelebrations = () => {
       supabase.rpc('get_current_month_anniversaries')
     ]);
 
-    console.log('[useOptimizedCelebrations] Birthdays RPC response:', birthdaysResponse);
-    console.log('[useOptimizedCelebrations] Anniversaries RPC response:', anniversariesResponse);
+    
 
     if (birthdaysResponse.error) {
       console.error('Error loading birthdays via RPC:', birthdaysResponse.error);
@@ -106,7 +105,7 @@ export const useOptimizedCelebrations = () => {
     const birthdays = birthdaysResponse.data || [];
     const anniversaries = anniversariesResponse.data || [];
     
-    console.log(`[useOptimizedCelebrations] Successfully fetched ${birthdays.length} birthdays and ${anniversaries.length} anniversaries via RPC`);
+    
     
     return { birthdays, anniversaries };
   }, []);

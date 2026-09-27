@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
+import { getLocalDateString, formatDateString } from "@/lib/dateUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/adminLogger";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ const AdminTopicManager = () => {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [newTopic, setNewTopic] = useState({
-    topic_date: format(new Date(), "yyyy-MM-dd"),
+    topic_date: getLocalDateString(),
     topic: "",
     scriptures: "",
   });
@@ -82,7 +83,7 @@ const AdminTopicManager = () => {
       });
 
       setNewTopic({
-        topic_date: format(new Date(), "yyyy-MM-dd"),
+        topic_date: getLocalDateString(),
         topic: "",
         scriptures: "",
       });
@@ -244,18 +245,24 @@ const AdminTopicManager = () => {
       const topics = [];
 
       for (let i = 1; i < lines.length; i++) { // Skip header
-        const [date, topic, scriptures] = lines[i].split(',').map(item => item.trim());
-        
-        if (date && topic && scriptures) {
-          // Convert MM/DD/YYYY to YYYY-MM-DD
-          const dateParts = date.split('/');
-          if (dateParts.length === 3) {
-            const formattedDate = `${dateParts[2]}-${dateParts[0].padStart(2, '0')}-${dateParts[1].padStart(2, '0')}`;
-            topics.push({
-              topic_date: formattedDate,
-              topic: topic.replace(/"/g, ''),
-              scriptures: scriptures.replace(/"/g, ''),
-            });
+        // Match commas not inside quotes
+        const parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(item => item.trim());
+        if (parts.length >= 3) {
+          const date = parts[0];
+          const topic = parts[1];
+          const scriptures = parts[2];
+          
+          if (date && topic && scriptures) {
+            // Convert MM/DD/YYYY to YYYY-MM-DD
+            const dateParts = date.split('/');
+            if (dateParts.length === 3) {
+              const formattedDate = `${dateParts[2]}-${dateParts[0].padStart(2, '0')}-${dateParts[1].padStart(2, '0')}`;
+              topics.push({
+                topic_date: formattedDate,
+                topic: topic.replace(/^"|"$/g, '').replace(/""/g, '"'),
+                scriptures: scriptures.replace(/^"|"$/g, '').replace(/""/g, '"'),
+              });
+            }
           }
         }
       }
@@ -456,7 +463,7 @@ const AdminTopicManager = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm font-medium text-muted-foreground">
-                          {format(new Date(topic.topic_date + 'T00:00:00'), "EEEE, MMMM do, yyyy")}
+                          {formatDateString(topic.topic_date, "EEEE, MMMM do, yyyy")}
                         </span>
                       </div>
                       <h4 className="font-semibold text-lg mb-2">{topic.topic}</h4>

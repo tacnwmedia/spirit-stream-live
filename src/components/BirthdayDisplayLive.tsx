@@ -8,13 +8,7 @@ const BirthdayDisplayLive = () => {
   const { birthdays, loading, isRefreshing } = useOptimizedCelebrations();
   const currentMonthName = getChicagoMonthName();
   
-  console.log('[BirthdayDisplayLive] Component state:', { 
-    birthdaysCount: birthdays.length, 
-    loading, 
-    isRefreshing,
-    currentMonthName,
-    birthdays: birthdays.slice(0, 3) 
-  });
+
 
   if (loading) {
     return (

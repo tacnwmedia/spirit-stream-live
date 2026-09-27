@@ -153,8 +153,12 @@ const AdminWeddingAnniversaryManager = () => {
       const text = await file.text();
       const lines = text.split('\n').filter(line => line.trim());
       
-      const anniversariesData = lines.map(line => {
-        const [name, anniversary_date] = line.split(',').map(item => item.trim());
+      // Skip header and parse
+      const anniversariesData = lines.slice(1).map(line => {
+        // Handle potential commas within quoted names
+        const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(item => item.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+        const name = parts[0];
+        const anniversary_date = parts[1];
         return { name, anniversary_date };
       }).filter(item => item.name && item.anniversary_date);
 

@@ -96,6 +96,17 @@ const AdminDashboard = () => {
     };
 
     checkAuthAndLoadData();
+
+    // Listen for auth changes (e.g., session expiry)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate("/admin/login", { replace: true });
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const loadChurchData = async () => {

@@ -8,13 +8,7 @@ const WeddingAnniversaryDisplayLive = () => {
   const { anniversaries, loading, isRefreshing } = useOptimizedCelebrations();
   const currentMonthName = getChicagoMonthName();
   
-  console.log('[WeddingAnniversaryDisplayLive] Component state:', { 
-    anniversariesCount: anniversaries.length, 
-    loading, 
-    isRefreshing,
-    currentMonthName,
-    anniversaries: anniversaries.slice(0, 3) 
-  });
+
 
   if (loading) {
     return (

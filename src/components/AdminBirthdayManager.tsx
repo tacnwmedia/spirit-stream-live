@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/adminLogger";
-import { format } from "date-fns";
+import { formatDateString } from "@/lib/dateUtils";
 
 interface Birthday {
   id: string;
@@ -280,7 +280,7 @@ const AdminBirthdayManager = () => {
                   <div>
                     <h4 className="font-semibold">{birthday.name}</h4>
                     <p className="text-muted-foreground">
-                      {format(new Date(birthday.birthday + 'T00:00:00'), 'MMMM d, yyyy')}
+                      {formatDateString(birthday.birthday, 'MMMM d, yyyy')}
                     </p>
                   </div>
                   <div className="flex space-x-2">
