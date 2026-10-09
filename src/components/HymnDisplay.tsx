@@ -9,10 +9,10 @@ interface HymnDisplayProps {
 
 const HymnDisplay = ({ title, hymnNumber, hymnTitle }: HymnDisplayProps) => {
   return (
-    <Link to={`/hymn/${hymnNumber}`} className="block group">
-      <div className="church-card cursor-pointer">
+    <Link to={`/hymn/${hymnNumber}`} className="block group h-full">
+      <div className="church-card cursor-pointer h-full flex flex-col justify-between">
         <div className="flex items-center justify-center mb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 mr-3 shadow-inner">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 mr-3 shadow-inner shrink-0">
             <Music className="w-5 h-5 text-primary" />
           </div>
           <h3 className="text-xl font-semibold text-center">{title}</h3>

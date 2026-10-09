@@ -145,7 +145,8 @@ const Index = () => {
   // Check if today is the first Sunday of the month in Chicago time
   const today = getChicagoDate();
   const isFirstSunday = today.getDay() === 0 && today.getDate() <= 7;
-  const communionHymn = isFirstSunday ? getHymnByNumber(333) : null;
+  const communionHymn1 = isFirstSunday ? getHymnByNumber(333) : null;
+  const communionHymn2 = isFirstSunday ? getHymnByNumber(288) : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -215,13 +216,20 @@ const Index = () => {
             />
           )}
           
-          {/* Communion Hymn - Only on First Sunday (after Closing) */}
-          {communionHymn && (
-            <HymnDisplay 
-              title="Communion Hymn" 
-              hymnNumber={333} 
-              hymnTitle={communionHymn.title} 
-            />
+          {/* Communion Hymns - Only on First Sunday (after Closing) */}
+          {isFirstSunday && (
+            <div className="grid grid-cols-2 gap-3 md:gap-6">
+              <HymnDisplay 
+                title="Communion Hymn 1" 
+                hymnNumber={333} 
+                hymnTitle={communionHymn1?.title || "Communion Hymn"} 
+              />
+              <HymnDisplay 
+                title="Communion Hymn 2" 
+                hymnNumber={288} 
+                hymnTitle={communionHymn2?.title || "Communion Hymn"} 
+              />
+            </div>
           )}
           
           {/* Watchword Row */}

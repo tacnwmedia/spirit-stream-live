@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Plus, Trash2, Save, X } from "lucide-react";
+import { Search, Plus, Trash2, Save, X, ArrowUp, ArrowDown, ListOrdered, PlusCircle } from "lucide-react";
 import { logAdminAction } from "@/lib/adminLogger";
 
 interface HymnLine {
@@ -20,6 +20,18 @@ interface HymnLine {
 interface AdminHymnEditorProps {
   onCancel: () => void;
 }
+
+const autoRenumberLines = (lineList: HymnLine[]): HymnLine[] => {
+  const verseCounts: Record<number, number> = {};
+  return lineList.map((line) => {
+    const v = line.verse_number || 1;
+    verseCounts[v] = (verseCounts[v] || 0) + 1;
+    return {
+      ...line,
+      line_number: verseCounts[v],
+    };
+  });
+};
 
 const AdminHymnEditor = ({ onCancel }: AdminHymnEditorProps) => {
   const { toast } = useToast();
@@ -103,21 +115,57 @@ const AdminHymnEditor = ({ onCancel }: AdminHymnEditorProps) => {
     const lastLine = lines[lines.length - 1];
     const newLine: HymnLine = {
       verse_number: lastLine ? lastLine.verse_number : 1,
-      line_number: lastLine ? lastLine.line_number + 1 : 1,
+      line_number: 1,
       text: "",
-      chorus: false,
+      chorus: lastLine ? lastLine.chorus : false,
     };
-    setLines([...lines, newLine]);
+    setLines(autoRenumberLines([...lines, newLine]));
+  };
+
+  const insertLine = (index: number, position: 'above' | 'below') => {
+    const targetIndex = position === 'above' ? index : index + 1;
+    const refLine = lines[index];
+    const newLine: HymnLine = {
+      verse_number: refLine ? refLine.verse_number : 1,
+      line_number: 1,
+      text: "",
+      chorus: refLine ? refLine.chorus : false,
+    };
+    const updated = [...lines];
+    updated.splice(targetIndex, 0, newLine);
+    setLines(autoRenumberLines(updated));
+  };
+
+  const moveLine = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= lines.length) return;
+    const updated = [...lines];
+    const [moved] = updated.splice(index, 1);
+    updated.splice(newIndex, 0, moved);
+    setLines(autoRenumberLines(updated));
   };
 
   const removeLine = (index: number) => {
-    setLines(lines.filter((_, i) => i !== index));
+    const updated = lines.filter((_, i) => i !== index);
+    setLines(autoRenumberLines(updated));
+  };
+
+  const handleRenumberAll = () => {
+    setLines(autoRenumberLines(lines));
+    toast({
+      title: "Lines Renumbered",
+      description: "All line numbers updated sequentially per verse.",
+    });
   };
 
   const updateLine = (index: number, field: keyof HymnLine, value: any) => {
     const newLines = [...lines];
     newLines[index] = { ...newLines[index], [field]: value };
-    setLines(newLines);
+    if (field === 'verse_number') {
+      setLines(autoRenumberLines(newLines));
+    } else {
+      setLines(newLines);
+    }
   };
 
   const saveChanges = async () => {
@@ -236,57 +284,118 @@ const AdminHymnEditor = ({ onCancel }: AdminHymnEditorProps) => {
           <>
             {/* Edit Section */}
             <div className="space-y-4">
-              <div>
-                <Label>Hymn Number: {selectedHymnNumber}</Label>
-                <p className="text-sm text-muted-foreground mt-1">{hymnTitle}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-base font-semibold">Hymn #{selectedHymnNumber}</Label>
+                  <p className="text-sm text-muted-foreground">{hymnTitle}</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRenumberAll}
+                  className="flex items-center gap-1.5 text-xs"
+                  title="Auto-sequence line numbers per verse"
+                >
+                  <ListOrdered className="w-3.5 h-3.5" />
+                  Auto-Renumber
+                </Button>
               </div>
 
               {/* Lines Editor */}
-              <div className="space-y-4 max-h-96 overflow-y-auto border rounded-md p-4">
+              <div className="space-y-3 max-h-[450px] overflow-y-auto border rounded-md p-3 bg-muted/20">
                 {lines.map((line, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-2 items-center">
-                    <div className="col-span-2">
-                      <Label className="text-xs">Verse</Label>
+                  <div key={index} className="flex flex-wrap md:flex-nowrap items-center gap-2 p-3 border rounded-lg bg-card hover:border-primary/40 transition-colors shadow-sm">
+                    {/* Reorder Buttons */}
+                    <div className="flex flex-col gap-0.5">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-5 w-5 hover:bg-accent"
+                        title="Move line up"
+                        disabled={index === 0}
+                        onClick={() => moveLine(index, 'up')}
+                      >
+                        <ArrowUp className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-5 w-5 hover:bg-accent"
+                        title="Move line down"
+                        disabled={index === lines.length - 1}
+                        onClick={() => moveLine(index, 'down')}
+                      >
+                        <ArrowDown className="w-3 h-3" />
+                      </Button>
+                    </div>
+
+                    {/* Verse & Line inputs */}
+                    <div className="w-16">
+                      <Label className="text-[10px] text-muted-foreground uppercase font-semibold">Verse</Label>
                       <Input
                         type="number"
                         min="1"
                         value={line.verse_number}
                         onChange={(e) => updateLine(index, 'verse_number', parseInt(e.target.value) || 1)}
-                        className="text-sm"
+                        className="h-8 text-xs px-2 text-center"
                       />
                     </div>
-                    <div className="col-span-2">
-                      <Label className="text-xs">Line</Label>
+
+                    <div className="w-16">
+                      <Label className="text-[10px] text-muted-foreground uppercase font-semibold">Line</Label>
                       <Input
                         type="number"
                         min="1"
                         value={line.line_number}
                         onChange={(e) => updateLine(index, 'line_number', parseInt(e.target.value) || 1)}
-                        className="text-sm"
+                        className="h-8 text-xs px-2 text-center"
                       />
                     </div>
-                    <div className="col-span-5">
-                      <Label className="text-xs">Text</Label>
+
+                    {/* Text input */}
+                    <div className="flex-1 min-w-[180px]">
+                      <Label className="text-[10px] text-muted-foreground uppercase font-semibold">Lyric Text</Label>
                       <Input
                         value={line.text}
                         onChange={(e) => updateLine(index, 'text', e.target.value)}
                         placeholder="Line text..."
-                        className="text-sm"
+                        className="h-8 text-sm"
                       />
                     </div>
-                    <div className="col-span-2 flex items-center gap-2 pt-5">
+
+                    {/* Chorus Toggle */}
+                    <div className="flex items-center gap-1.5 pt-4">
                       <Switch
                         checked={line.chorus}
                         onCheckedChange={(checked) => updateLine(index, 'chorus', checked)}
+                        id={`editor-chorus-${index}`}
                       />
-                      <Label className="text-xs">Chorus</Label>
+                      <Label htmlFor={`editor-chorus-${index}`} className="text-xs cursor-pointer select-none">Chorus</Label>
                     </div>
-                    <div className="col-span-1 pt-5">
+
+                    {/* Action Buttons: Insert Above / Insert Below / Delete */}
+                    <div className="flex items-center gap-1 pt-4 ml-auto">
                       <Button
-                        onClick={() => removeLine(index)}
-                        variant="ghost"
+                        type="button"
                         size="sm"
-                        className="text-destructive"
+                        variant="outline"
+                        className="h-8 px-2 text-xs flex items-center gap-1 hover:bg-primary/10 hover:text-primary"
+                        title="Insert blank line directly below this line"
+                        onClick={() => insertLine(index, 'below')}
+                      >
+                        <PlusCircle className="w-3.5 h-3.5 text-primary" />
+                        <span>Insert Below</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        title="Delete line"
+                        onClick={() => removeLine(index)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -296,12 +405,12 @@ const AdminHymnEditor = ({ onCancel }: AdminHymnEditorProps) => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 pt-2">
                 <Button onClick={addLine} variant="outline" className="flex items-center gap-2">
                   <Plus className="w-4 h-4" />
-                  Add Line
+                  Add Line to Bottom
                 </Button>
-                <Button onClick={saveChanges} disabled={isLoading} className="flex items-center gap-2">
+                <Button onClick={saveChanges} disabled={isLoading} className="flex items-center gap-2 ml-auto">
                   <Save className="w-4 h-4" />
                   Save Changes
                 </Button>
